@@ -21,11 +21,17 @@ class GeminiProvider(AIProvider):
         response_schema: Optional[Dict[str, Any]] = None,
     ) -> ProviderResult:
         if not self.api_key:
-            raise ValueError("Gemini API key is not configured.")
+            raise ValueError("Gemini API key is not configured on the server. Please add GEMINI_API_KEY to your Render environment variables.")
 
         # Ensure model is cleanly formatted
         clean_model = model.replace("models/", "")
-        endpoint = f"{self.base_url}/models/{clean_model}:generateContent?key={self.api_key}"
+        
+        # Candidate models for high-demand fallback
+        candidate_models = [clean_model]
+        if clean_model in ["gemini-1.5-flash", "gemini-1.5-flash-latest"]:
+            candidate_models.extend(["gemini-2.0-flash", "gemini-1.5-flash-8b"])
+        elif clean_model == "gemini-2.0-flash":
+            candidate_models.extend(["gemini-1.5-flash"])
 
         # Construct parts for Gemini contents
         parts = []
@@ -63,19 +69,32 @@ class GeminiProvider(AIProvider):
             }
 
         start_time = time.perf_counter()
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            try:
-                response = await client.post(endpoint, json=payload)
-            except httpx.TimeoutException:
-                raise TimeoutError("Gemini request timed out after 60 seconds.")
-            except Exception as e:
-                raise RuntimeError(f"Network error calling Gemini: {str(e)}")
+        last_error = ""
+
+        for m_name in candidate_models:
+            endpoint = f"{self.base_url}/models/{m_name}:generateContent?key={self.api_key}"
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                try:
+                    response = await client.post(endpoint, json=payload)
+                except httpx.TimeoutException:
+                    raise TimeoutError("Gemini request timed out after 60 seconds.")
+                except Exception as e:
+                    raise RuntimeError(f"Network error calling Gemini: {str(e)}")
+
+            if response.status_code == 200:
+                clean_model = m_name
+                break
+            else:
+                last_error = f"Gemini API returned {response.status_code}: {response.text}"
+                # If overloaded (503/429) or not found (404), try next candidate
+                if response.status_code in [404, 429, 503]:
+                    continue
+                else:
+                    raise RuntimeError(last_error)
+        else:
+            raise RuntimeError(last_error)
 
         latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
-
-        if response.status_code != 200:
-            error_msg = f"Gemini API returned {response.status_code}: {response.text}"
-            raise RuntimeError(error_msg)
 
         data = response.json()
         candidates = data.get("candidates", [])

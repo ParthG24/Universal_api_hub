@@ -21,7 +21,7 @@ class GroqProvider(AIProvider):
         response_schema: Optional[Dict[str, Any]] = None,
     ) -> ProviderResult:
         if not self.api_key:
-            raise ValueError("Groq API key is not configured.")
+            raise ValueError("Groq API key is not configured on the server. Please add GROQ_API_KEY to your Render environment variables.")
 
         endpoint = f"{self.base_url}/chat/completions"
         headers = {

@@ -1,5 +1,7 @@
 import time
 import json
+import re
+import logging
 from typing import Optional, Dict, Any, Tuple
 from fastapi import APIRouter, Depends, Request, Header, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -243,6 +245,7 @@ async def invoke_connector(
     except Exception as e:
         elapsed = (time.perf_counter() - start_time) * 1000
         error_str = str(e)
+        logging.getLogger("universal_hub").error(f"Provider invocation error: {error_str}", exc_info=True)
         log_invocation(
             db=db,
             connector_id=connector.id,
@@ -254,6 +257,14 @@ async def invoke_connector(
             error_message=error_str,
             request_data=validated_inputs,
         )
+
+        # Sanitize any raw API key from the message returned to clients
+        clean_msg = error_str
+        if "key=" in clean_msg:
+            clean_msg = re.sub(r"key=[a-zA-Z0-9_\-]+", "key=[REDACTED]", clean_msg)
+        if "Bearer " in clean_msg:
+            clean_msg = re.sub(r"Bearer\s+[a-zA-Z0-9_\-]+", "Bearer [REDACTED]", clean_msg)
+
         return JSONResponse(
             status_code=502,
             content={
@@ -261,7 +272,7 @@ async def invoke_connector(
                 "data": None,
                 "error": {
                     "type": "provider_error",
-                    "message": "An error occurred while contacting the upstream AI provider.",
+                    "message": clean_msg if clean_msg else "An error occurred while contacting the upstream AI provider.",
                 },
             },
         )
