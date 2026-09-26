@@ -383,7 +383,7 @@ console.log("Tokens Consumed:", meta.tokens);`;
                     Connector A • Vision
                   </span>
                   <span className="font-mono text-[10px] text-[#e07850] font-bold uppercase">
-                    Gemini 2.0 Flash (Free)
+                    Gemini 3.8 Flash (Free Tier)
                   </span>
                 </div>
 

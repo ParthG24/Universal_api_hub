@@ -50,13 +50,19 @@ class GeminiProvider(AIProvider):
         # Ensure model is cleanly formatted
         clean_model = model.replace("models/", "")
 
-        # Auto-map deprecated, restricted, or unavailable models directly to stable free models
-        DEPRECATED_MODELS = {
-            "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash-8b",
-            "gemini-3.8-flash", "gemini-3.5-flash"
+        # Auto-map retired legacy models directly to current flagship or low-demand model
+        RETIRED_MODELS = {
+            "gemini-2.0-flash",
+            "gemini-2.0-flash-lite",
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-8b",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-pro",
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
         }
-        if clean_model in DEPRECATED_MODELS:
-            clean_model = "gemini-2.0-flash"
+        if clean_model in RETIRED_MODELS:
+            clean_model = "gemini-3.8-flash"
         
         # Discover live supported models for this specific Google API key
         active_models = await self._get_active_models()
@@ -64,16 +70,15 @@ class GeminiProvider(AIProvider):
         candidate_models = []
         if clean_model in active_models:
             candidate_models.append(clean_model)
-        elif clean_model not in DEPRECATED_MODELS:
+        elif clean_model not in RETIRED_MODELS:
             candidate_models.append(clean_model)
 
-        # Prioritize low-demand, high-availability free tier models
+        # 2026 Flagship and Low-Demand models
         preferred_models = [
-            "gemini-2.0-flash",
-            "gemini-2.0-flash-lite",
-            "gemini-1.5-flash",
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-pro",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.7-flash",
         ]
 
         if active_models:
@@ -82,7 +87,7 @@ class GeminiProvider(AIProvider):
                     candidate_models.append(p)
             # If requested model wasn't active and no preferred found, pick first active
             if not candidate_models:
-                candidate_models.extend([m for m in active_models if m not in DEPRECATED_MODELS][:3])
+                candidate_models.extend([m for m in active_models if m not in RETIRED_MODELS][:3])
         else:
             for p in preferred_models:
                 if p not in candidate_models:
@@ -221,43 +226,35 @@ class GeminiProvider(AIProvider):
     def _fallback_models(self) -> List[ModelInfo]:
         return [
             ModelInfo(
-                id="gemini-2.0-flash",
-                name="Gemini 2.0 Flash (Fast & Free)",
+                id="gemini-3.8-flash",
+                name="Gemini 3.8 Flash (Latest Flagship / Vision)",
                 provider=self.name,
                 capabilities=["text", "vision"],
                 context_window=1000000,
-                description="Google's next-gen multimodal model with high stability and fast vision processing.",
+                description="Google's flagship 2026 multimodal model with ultra-fast vision and structured extraction.",
             ),
             ModelInfo(
-                id="gemini-2.0-flash-lite",
-                name="Gemini 2.0 Flash-Lite (Low Latency / High Capacity)",
+                id="gemini-3.5-flash-lite",
+                name="Gemini 3.5 Flash-Lite (Low Demand / High Capacity)",
                 provider=self.name,
                 capabilities=["text", "vision"],
                 context_window=1000000,
-                description="Engineered for maximum throughput and minimal queue demand spikes.",
+                description="High-throughput, low-demand workhorse model with minimal queue latency.",
             ),
             ModelInfo(
-                id="gemini-1.5-flash",
-                name="Gemini 1.5 Flash",
+                id="gemini-3.5-flash",
+                name="Gemini 3.5 Flash (Stable GA)",
                 provider=self.name,
                 capabilities=["text", "vision"],
                 context_window=1000000,
-                description="Standard multimodal model for fast text and image extraction.",
+                description="Stable, high-efficiency multimodal model for reasoning, text, and images.",
             ),
             ModelInfo(
-                id="gemini-1.5-flash-latest",
-                name="Gemini 1.5 Flash Latest",
+                id="gemini-3.7-flash",
+                name="Gemini 3.7 Flash",
                 provider=self.name,
                 capabilities=["text", "vision"],
                 context_window=1000000,
-                description="Fast and versatile multimodal model for text and image analysis.",
-            ),
-            ModelInfo(
-                id="gemini-1.5-pro",
-                name="Gemini 1.5 Pro (Deep Reasoning)",
-                provider=self.name,
-                capabilities=["text", "vision"],
-                context_window=2000000,
-                description="High-intelligence model for complex tasks and large contexts.",
+                description="High-capability Flash predecessor model.",
             ),
         ]

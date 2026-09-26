@@ -48,7 +48,7 @@ A production-style developer platform where administrators can define, deploy, t
 The platform comes pre-seeded with three fully functional demonstration connectors running exclusively on zero-cost, high-reliability free tiers:
 
 ### Connector A — Business Card Scanner (`card-scanner`)
-- **Engine:** Google Gemini (`gemini-2.0-flash` / `gemini-1.5-flash` - 100% Free Tier)
+- **Engine:** Google Gemini (`gemini-3.8-flash` / `gemini-3.5-flash-lite` - Free Tier)
 - **Type:** Multimodal Vision → Structured JSON
 - **Inputs:** `image` (binary file / photo, required)
 - **Output Schema:** `{ "name": "string", "company": "string", "designation": "string", "phone": "string", "email": "string", "website": "string" }`

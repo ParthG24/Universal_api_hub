@@ -29,7 +29,7 @@ def seed_database():
         else:
             print(f"[Seed] Admin already exists: {admin.email}")
 
-        # 2. Seed Connector A: Business Card Scanner (Gemini 2.0 Flash - 100% Free / High Stability)
+        # 2. Seed Connector A: Business Card Scanner (Gemini 3.8 Flash - Latest 2026 Multimodal Flagship)
         card_scanner = db.query(Connector).filter(Connector.slug == "card-scanner").first()
         if not card_scanner:
             card_scanner = Connector(
@@ -37,7 +37,7 @@ def seed_database():
                 name="Business Card Scanner",
                 description="Extracts structured contact info (name, company, phone, email, website) from business card photos.",
                 provider="gemini",
-                model="gemini-2.0-flash",
+                model="gemini-3.8-flash",
                 system_prompt=(
                     "You are a business card extraction system. "
                     "Extract the person's name, company, designation, phone, email and website from the supplied image. "
@@ -71,10 +71,10 @@ def seed_database():
             db.add(img_field)
             print("[Seed] Created Connector A: Business Card Scanner")
         else:
-            if card_scanner.model in ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-1.5-flash-8b", "gemini-2.5-flash"]:
-                card_scanner.model = "gemini-2.0-flash"
+            if card_scanner.model in ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-2.5-flash"]:
+                card_scanner.model = "gemini-3.8-flash"
                 db.add(card_scanner)
-                print("[Seed] Upgraded card-scanner model to gemini-2.0-flash")
+                print("[Seed] Upgraded card-scanner model to gemini-3.8-flash")
 
         # 3. Seed Connector B: Content Rewriter (Groq Llama 3.1 8B Instant - 100% Free Tier Guaranteed)
         rewriter = db.query(Connector).filter(Connector.slug == "content-rewriter").first()
@@ -211,7 +211,7 @@ def seed_database():
                 total_tokens=944,
                 estimated_cost=0.000092,
                 provider="gemini",
-                model="gemini-2.0-flash",
+                model="gemini-3.8-flash",
                 request_preview='{"image": "[Image: alex_morgan_card.jpg (240182 bytes)]"}',
                 response_preview='{"name": "Alex Morgan", "company": "Apex Dynamics", "designation": "VP Engineering", "phone": "+1-555-0192", "email": "alex@apexdynamics.io", "website": "https://apexdynamics.io"}',
             ))
