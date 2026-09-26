@@ -1,17 +1,22 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { AlertCircle, CheckCircle2, UserPlus, LogIn } from "lucide-react";
 
-function LoginForm() {
+export function LoginForm({ defaultMode }: { defaultMode?: "login" | "signup" }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
 
-  const [mode, setMode] = useState<"login" | "signup">(initialMode);
+  const isSignupRoute =
+    defaultMode === "signup" ||
+    pathname === "/signup" ||
+    searchParams.get("mode") === "signup";
+
+  const [mode, setMode] = useState<"login" | "signup">(isSignupRoute ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,10 +24,23 @@ function LoginForm() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (searchParams.get("mode") === "signup") {
+    if (defaultMode === "signup" || pathname === "/signup" || searchParams.get("mode") === "signup") {
       setMode("signup");
+    } else if (defaultMode === "login" || pathname === "/login" || searchParams.get("mode") === "login") {
+      setMode("login");
     }
-  }, [searchParams]);
+  }, [pathname, searchParams, defaultMode]);
+
+  const switchMode = (newMode: "login" | "signup") => {
+    setMode(newMode);
+    setError(null);
+    setSuccessMsg(null);
+    if (newMode === "signup") {
+      router.replace("/signup", { scroll: false });
+    } else {
+      router.replace("/login", { scroll: false });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,14 +76,11 @@ function LoginForm() {
     <div className="min-h-[75vh] flex items-center justify-center px-6 py-16 bg-white">
       <div className="w-full max-w-sm space-y-6">
         {/* Top Mode Selector Tabs */}
-        <div className="grid grid-cols-2 border border-black bg-neutral-100 font-mono text-xs">
+        <div className="grid grid-cols-2 border-2 border-black bg-neutral-100 font-mono text-xs shadow-sm">
           <button
             type="button"
-            onClick={() => {
-              setMode("login");
-              setError(null);
-            }}
-            className={`py-3 px-4 flex items-center justify-center gap-2 font-bold uppercase transition-colors ${
+            onClick={() => switchMode("login")}
+            className={`py-3.5 px-4 flex items-center justify-center gap-2 font-bold uppercase transition-colors ${
               mode === "login"
                 ? "bg-black text-white"
                 : "text-black hover:bg-neutral-200"
@@ -76,11 +91,8 @@ function LoginForm() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              setMode("signup");
-              setError(null);
-            }}
-            className={`py-3 px-4 flex items-center justify-center gap-2 font-bold uppercase transition-colors ${
+            onClick={() => switchMode("signup")}
+            className={`py-3.5 px-4 flex items-center justify-center gap-2 font-bold uppercase transition-colors ${
               mode === "signup"
                 ? "bg-black text-white"
                 : "text-black hover:bg-neutral-200"
@@ -97,25 +109,49 @@ function LoginForm() {
           </h1>
           <p className="font-mono text-xs text-neutral-600">
             {mode === "signup"
-              ? "Register your operator account to deploy and monitor AI connectors."
+              ? "Register a new free operator account to deploy and monitor AI connectors."
               : "Authenticate to manage AI connectors and view live telemetry."}
           </p>
         </div>
 
-        {/* Demo Credentials Pill (Visible on Login) */}
-        {mode === "login" && (
-          <div className="border border-neutral-300 bg-neutral-50 p-3.5 flex items-center justify-between font-mono text-xs">
-            <div>
-              <div className="font-bold text-black uppercase text-[10px]">Demo Evaluator</div>
-              <div className="text-neutral-500 text-[11px]">admin@universalhub.dev</div>
+        {/* Info Banner depending on mode */}
+        {mode === "login" ? (
+          <div className="border border-neutral-300 bg-neutral-50 p-3.5 space-y-2 font-mono text-xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-bold text-black uppercase text-[10px]">Demo Evaluator</div>
+                <div className="text-neutral-500 text-[11px]">admin@universalhub.dev</div>
+              </div>
+              <button
+                type="button"
+                onClick={handleFillDemo}
+                className="text-[11px] font-bold uppercase text-[#DE6E4B] hover:text-black transition-colors"
+              >
+                [Auto-Fill]
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="text-[11px] font-bold uppercase text-[#DE6E4B] hover:text-black transition-colors"
-            >
-              [Auto-Fill]
-            </button>
+            <div className="border-t border-neutral-200 pt-2 flex items-center justify-between text-[11px]">
+              <span className="text-neutral-600">Need a new account?</span>
+              <button
+                type="button"
+                onClick={() => switchMode("signup")}
+                className="font-bold text-black hover:text-[#DE6E4B] underline"
+              >
+                Sign Up Here &rarr;
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="border border-neutral-300 bg-neutral-50 p-3.5 space-y-2 font-mono text-xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-bold text-black uppercase text-[10px]">NEW OPERATOR REGISTRATION</div>
+                <div className="text-neutral-500 text-[11px]">Instant access to deploy & test AI connectors</div>
+              </div>
+              <span className="text-[10px] font-mono bg-black text-white px-2 py-0.5 font-bold uppercase">
+                Free Tier
+              </span>
+            </div>
           </div>
         )}
 
@@ -177,33 +213,27 @@ function LoginForm() {
               : "Sign In →"}
           </button>
 
-          <div className="text-center pt-2 border-t border-neutral-100">
+          <div className="text-center pt-3 border-t border-neutral-200">
             {mode === "login" ? (
-              <p className="font-mono text-xs text-neutral-500">
+              <p className="font-mono text-xs text-neutral-600">
                 Don&apos;t have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode("signup");
-                    setError(null);
-                  }}
-                  className="font-bold text-[#DE6E4B] hover:underline"
+                  onClick={() => switchMode("signup")}
+                  className="font-bold text-black underline hover:text-[#DE6E4B] transition-colors"
                 >
-                  Sign Up
+                  Create Account (Sign Up Free) &rarr;
                 </button>
               </p>
             ) : (
-              <p className="font-mono text-xs text-neutral-500">
+              <p className="font-mono text-xs text-neutral-600">
                 Already have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode("login");
-                    setError(null);
-                  }}
-                  className="font-bold text-[#DE6E4B] hover:underline"
+                  onClick={() => switchMode("login")}
+                  className="font-bold text-black underline hover:text-[#DE6E4B] transition-colors"
                 >
-                  Sign In
+                  Sign In Here &rarr;
                 </button>
               </p>
             )}

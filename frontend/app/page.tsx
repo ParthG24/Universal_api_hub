@@ -103,16 +103,22 @@ console.log("Tokens Consumed:", meta.tokens);`;
 
             <div className="pt-4 flex flex-wrap items-center gap-4">
               <Link
-                href="/connectors/card-scanner/docs"
-                className="btn-surge-white text-xs px-6 py-3 inline-block"
+                href="/signup"
+                className="btn-surge-black text-xs px-6 py-3 inline-block font-mono font-bold tracking-wider"
               >
-                DOCUMENTATION
+                SIGN UP FREE &rarr;
               </Link>
               <Link
                 href="/connectors/content-rewriter/test"
-                className="btn-surge-orange text-xs px-6 py-3 inline-block"
+                className="btn-surge-orange text-xs px-6 py-3 inline-block font-mono font-bold tracking-wider"
               >
-                TRY CHAT DEMO
+                TRY LIVE PLAYGROUND
+              </Link>
+              <Link
+                href="/guide"
+                className="btn-surge-white text-xs px-6 py-3 inline-block font-mono font-bold tracking-wider"
+              >
+                DEVELOPER GUIDE
               </Link>
             </div>
           </div>
@@ -366,12 +372,20 @@ console.log("Tokens Consumed:", meta.tokens);`;
                 PRE-CONFIGURED CONNECTORS
               </h2>
             </div>
-            <Link
-              href="/connectors/new"
-              className="btn-surge-black"
-            >
-              + Create Connector
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/signup"
+                className="btn-surge-orange text-xs py-2.5 px-4 font-mono font-bold"
+              >
+                Sign Up Free
+              </Link>
+              <Link
+                href="/connectors/new"
+                className="btn-surge-black text-xs py-2.5 px-4 font-mono font-bold"
+              >
+                + Create Connector
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

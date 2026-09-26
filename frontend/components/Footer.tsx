@@ -78,6 +78,16 @@ export default function Footer() {
                   Demo Playground
                 </Link>
               </li>
+              <li>
+                <Link href="/login" className="hover:underline">
+                  Sign In
+                </Link>
+              </li>
+              <li>
+                <Link href="/signup" className="hover:underline font-bold text-[#e07850]">
+                  Sign Up Free
+                </Link>
+              </li>
             </ul>
           </div>
 
