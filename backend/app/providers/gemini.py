@@ -12,6 +12,29 @@ class GeminiProvider(AIProvider):
     def __init__(self, api_key: str):
         self.api_key = api_key.strip()
         self.base_url = "https://generativelanguage.googleapis.com/v1beta"
+        self._cached_active_models: List[str] = []
+
+    async def _get_active_models(self) -> List[str]:
+        if not self.api_key:
+            return []
+        if self._cached_active_models:
+            return self._cached_active_models
+        endpoint = f"{self.base_url}/models?key={self.api_key}"
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                res = await client.get(endpoint)
+                if res.status_code == 200:
+                    data = res.json()
+                    active = []
+                    for m in data.get("models", []):
+                        if "generateContent" in m.get("supportedGenerationMethods", []):
+                            active.append(m.get("name", "").replace("models/", ""))
+                    if active:
+                        self._cached_active_models = active
+                        return active
+        except Exception:
+            pass
+        return []
 
     async def generate(
         self,
@@ -26,12 +49,34 @@ class GeminiProvider(AIProvider):
         # Ensure model is cleanly formatted
         clean_model = model.replace("models/", "")
         
-        # Candidate models for high-demand fallback
-        candidate_models = [clean_model]
-        if clean_model in ["gemini-1.5-flash", "gemini-1.5-flash-latest"]:
-            candidate_models.extend(["gemini-2.0-flash", "gemini-1.5-flash-8b"])
-        elif clean_model == "gemini-2.0-flash":
-            candidate_models.extend(["gemini-1.5-flash"])
+        # Discover live supported models for this specific Google API key
+        active_models = await self._get_active_models()
+
+        candidate_models = []
+        if clean_model in active_models:
+            candidate_models.append(clean_model)
+
+        preferred_models = [
+            "gemini-2.0-flash",
+            "gemini-2.5-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-2.0-flash-lite",
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-pro",
+        ]
+
+        if active_models:
+            for p in preferred_models:
+                if p in active_models and p not in candidate_models:
+                    candidate_models.append(p)
+            # If requested model wasn't active and no preferred found, pick first active
+            if not candidate_models:
+                candidate_models.extend(active_models[:3])
+        else:
+            candidate_models = [clean_model, "gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash"]
+            # Deduplicate while preserving order
+            candidate_models = list(dict.fromkeys(candidate_models))
 
         # Construct parts for Gemini contents
         parts = []
@@ -160,20 +205,28 @@ class GeminiProvider(AIProvider):
     def _fallback_models(self) -> List[ModelInfo]:
         return [
             ModelInfo(
-                id="gemini-1.5-flash",
-                name="Gemini 1.5 Flash (Fast & Multimodal)",
+                id="gemini-2.0-flash",
+                name="Gemini 2.0 Flash (Recommended / Fast)",
+                provider=self.name,
+                capabilities=["text", "vision"],
+                context_window=1000000,
+                description="Next-generation multimodal model with state-of-the-art vision and JSON reasoning.",
+            ),
+            ModelInfo(
+                id="gemini-1.5-flash-latest",
+                name="Gemini 1.5 Flash Latest",
                 provider=self.name,
                 capabilities=["text", "vision"],
                 context_window=1000000,
                 description="Fast and versatile multimodal model for text and image analysis.",
             ),
             ModelInfo(
-                id="gemini-2.0-flash",
-                name="Gemini 2.0 Flash (Next-Gen)",
+                id="gemini-1.5-flash",
+                name="Gemini 1.5 Flash",
                 provider=self.name,
                 capabilities=["text", "vision"],
                 context_window=1000000,
-                description="Next-generation multimodal model with state-of-the-art reasoning.",
+                description="Standard multimodal model for fast text and image extraction.",
             ),
             ModelInfo(
                 id="gemini-1.5-pro",

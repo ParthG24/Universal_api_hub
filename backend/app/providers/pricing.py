@@ -8,6 +8,8 @@ MODEL_PRICING: Dict[str, Tuple[float, float]] = {
     "gemini-1.5-pro": (1.25, 5.00),
     "gemini-2.0-flash": (0.10, 0.40),
     "gemini-2.0-flash-exp": (0.00, 0.00),  # Experimental free tier
+    "gemini-2.5-flash": (0.10, 0.40),
+    "gemini-2.0-flash-lite": (0.05, 0.20),
     
     # Groq Models (extremely cost effective / fast)
     "llama-3.3-70b-versatile": (0.59, 0.79),

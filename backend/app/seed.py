@@ -36,7 +36,7 @@ def seed_database():
                 name="Business Card Scanner",
                 description="Extracts structured contact info (name, company, phone, email, website) from business card photos.",
                 provider="gemini",
-                model="gemini-1.5-flash",
+                model="gemini-2.0-flash",
                 system_prompt=(
                     "You are a business card extraction system. "
                     "Extract the person's name, company, designation, phone, email and website from the supplied image. "
@@ -69,6 +69,11 @@ def seed_database():
             )
             db.add(img_field)
             print("[Seed] Created Connector A: Business Card Scanner")
+        else:
+            if card_scanner.model in ["gemini-1.5-flash", "gemini-1.5-flash-8b"]:
+                card_scanner.model = "gemini-2.0-flash"
+                db.add(card_scanner)
+                print("[Seed] Upgraded card-scanner model to gemini-2.0-flash")
 
         # 3. Seed Connector B: Content Rewriter
         rewriter = db.query(Connector).filter(Connector.slug == "content-rewriter").first()
