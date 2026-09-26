@@ -54,12 +54,6 @@ export default function Navbar() {
           >
             Connectors
           </Link>
-          <Link
-            href="/connectors/content-rewriter/test"
-            className="text-black hover:text-[#e07850] transition-colors"
-          >
-            Demo
-          </Link>
         </nav>
 
         {/* Right Button: exact SurgeDB GET STARTED button */}
