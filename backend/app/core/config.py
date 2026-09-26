@@ -38,6 +38,16 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            if v.strip() == "*":
+                return ["*"]
+            if not v.startswith("["):
+                return [i.strip() for i in v.split(",") if i.strip()]
+        return v
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
