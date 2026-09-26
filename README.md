@@ -2,6 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://universal-api-owb68btc4-squeak2.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/ParthG24/Universal_api_hub)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-blue.svg?style=flat&logo=github)](https://github.com/ParthG24/Universal_api_hub/releases/tag/v1.0.0)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16+-black.svg?style=flat&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
