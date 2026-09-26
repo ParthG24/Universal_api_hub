@@ -16,7 +16,7 @@ export default function Footer() {
           </div>
 
           <a
-            href="https://github.com"
+            href="https://github.com/ParthG24/Universal_api_hub"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-surge btn-surge-white text-xs px-6 py-2.5"
@@ -93,7 +93,7 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                <a href="https://github.com/ParthG24/Universal_api_hub" target="_blank" rel="noopener noreferrer" className="hover:underline">
                   GitHub
                 </a>
               </li>

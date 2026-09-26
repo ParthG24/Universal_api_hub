@@ -3,6 +3,10 @@ from typing import Dict, Tuple
 # Pricing catalog: (price_per_1M_input_tokens_usd, price_per_1M_output_tokens_usd)
 MODEL_PRICING: Dict[str, Tuple[float, float]] = {
     # Google Gemini Models
+    "gemini-flash-latest": (0.075, 0.30),
+    "gemini-pro-latest": (1.25, 5.00),
+    "gemini-2.5-flash": (0.075, 0.30),
+    "gemini-2.5-pro": (1.25, 5.00),
     "gemini-1.5-flash": (0.075, 0.30),
     "gemini-1.5-flash-latest": (0.075, 0.30),
     "gemini-1.5-pro": (1.25, 5.00),

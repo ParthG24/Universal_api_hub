@@ -65,8 +65,8 @@ The platform comes pre-seeded with two fully functional demo connectors:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/your-username/universal-ai-hub.git
-cd universal-ai-hub
+git clone https://github.com/ParthG24/Universal_api_hub.git
+cd Universal_api_hub
 ```
 
 ### Step 2: Configure Environment Variables

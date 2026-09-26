@@ -42,12 +42,14 @@ export default function Navbar() {
           >
             Guide
           </Link>
-          <Link
-            href="/connectors/card-scanner/docs"
+          <a
+            href="https://github.com/ParthG24/Universal_api_hub"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-black hover:text-[#e07850] transition-colors"
           >
-            Docs
-          </Link>
+            GitHub
+          </a>
           <Link
             href="/dashboard"
             className="text-black hover:text-[#e07850] transition-colors"
