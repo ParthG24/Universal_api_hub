@@ -23,15 +23,9 @@ class GeminiProvider(AIProvider):
         if not self.api_key:
             raise ValueError("Gemini API key is not configured.")
 
-        # Ensure model is cleanly formatted and maps gracefully to active Gemini API models
+        # Ensure model is cleanly formatted
         clean_model = model.replace("models/", "")
-        candidate_models = []
-        if clean_model in ("gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-flash-latest", "gemini-flash-lite-latest"):
-            candidate_models = ["gemini-flash-lite-latest", "gemini-flash-latest"]
-        elif clean_model in ("gemini-1.5-pro", "gemini-1.5-pro-latest"):
-            candidate_models = ["gemini-pro-latest", "gemini-flash-lite-latest"]
-        else:
-            candidate_models = [clean_model, "gemini-flash-lite-latest"]
+        endpoint = f"{self.base_url}/models/{clean_model}:generateContent?key={self.api_key}"
 
         # Construct parts for Gemini contents
         parts = []
@@ -69,33 +63,19 @@ class GeminiProvider(AIProvider):
             }
 
         start_time = time.perf_counter()
-        response = None
-        last_error = ""
-
         async with httpx.AsyncClient(timeout=60.0) as client:
-            for target_model in candidate_models:
-                endpoint = f"{self.base_url}/models/{target_model}:generateContent?key={self.api_key}"
-                try:
-                    res = await client.post(endpoint, json=payload)
-                    if res.status_code == 200:
-                        response = res
-                        clean_model = target_model
-                        break
-                    else:
-                        last_error = f"Gemini API returned {res.status_code}: {res.text}"
-                        if res.status_code in (503, 429, 404):
-                            continue
-                except httpx.TimeoutException:
-                    last_error = "Gemini request timed out after 60 seconds."
-                    continue
-                except Exception as e:
-                    last_error = f"Network error calling Gemini: {str(e)}"
-                    continue
+            try:
+                response = await client.post(endpoint, json=payload)
+            except httpx.TimeoutException:
+                raise TimeoutError("Gemini request timed out after 60 seconds.")
+            except Exception as e:
+                raise RuntimeError(f"Network error calling Gemini: {str(e)}")
 
         latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
-        if not response or response.status_code != 200:
-            raise RuntimeError(last_error or "Failed to receive a valid response from Gemini.")
+        if response.status_code != 200:
+            error_msg = f"Gemini API returned {response.status_code}: {response.text}"
+            raise RuntimeError(error_msg)
 
         data = response.json()
         candidates = data.get("candidates", [])

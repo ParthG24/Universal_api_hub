@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-yellow.svg?style=flat&logo=python)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A production-style developer platform where administrators can define, deploy, test, document, and monitor reusable AI-powered API endpoints ("connectors") without writing custom code for each one. Built with a unified **Provider Adapter Architecture** supporting **Google Gemini** (multimodal vision + text), **Groq** (high-speed Llama models), and **OpenAI**, featuring an interactive dynamic test console, automatic JSON schema repair, and persistent token/cost observability styled in the **SurgeDB neo-brutalist technical minimalist aesthetic**.
+A production-style developer platform where administrators can define, deploy, test, document, and monitor reusable AI-powered API endpoints ("connectors") without writing custom code for each one. Built with a unified **Provider Adapter Architecture** supporting **Google Gemini** (multimodal vision + text), **Groq** (high-speed Llama models), and **OpenAI**, featuring an interactive dynamic test console, automatic JSON schema repair, and persistent token/cost observability styled in the **minimalist aesthetic**.
 
 ---
 
@@ -65,8 +65,8 @@ The platform comes pre-seeded with two fully functional demo connectors:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/ParthG24/Universal_api_hub.git
-cd Universal_api_hub
+git clone https://github.com/your-username/universal-ai-hub.git
+cd universal-ai-hub
 ```
 
 ### Step 2: Configure Environment Variables

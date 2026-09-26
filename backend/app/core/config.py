@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "Admin123!"
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "../.env"),
+        env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
@@ -41,11 +41,8 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
-        if isinstance(v, str):
-            if v.startswith("postgres://"):
-                return v.replace("postgres://", "postgresql+psycopg2://", 1)
-            elif v.startswith("postgresql://") and not v.startswith("postgresql+"):
-                return v.replace("postgresql://", "postgresql+psycopg2://", 1)
+        if isinstance(v, str) and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
         return v
 
 

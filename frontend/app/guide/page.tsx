@@ -91,7 +91,9 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
 
   return (
     <div className="min-h-screen bg-white text-black selection:bg-[#e07850] selection:text-white">
-      <main className="pt-8 pb-20">
+      <Navbar />
+
+      <main className="pt-28 pb-20">
         {/* Hero Section */}
         <section className="border-b border-black py-16 px-6 bg-neutral-50/50">
           <div className="max-w-7xl mx-auto">
@@ -755,7 +757,7 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
         </div>
       </main>
 
-      
+      <Footer />
     </div>
   );
 }
