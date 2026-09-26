@@ -81,6 +81,12 @@ export default function TestConsolePage() {
         initialValues["word_count"] = 30;
       }
 
+      if (c.slug === "card-scanner" && !customApiKey) {
+        setCustomApiKey("uah_card_demo_key_2026_xyz987");
+      } else if (c.slug === "content-rewriter" && !customApiKey) {
+        setCustomApiKey("uah_rewrite_demo_key_2026_abc123");
+      }
+
       setFormValues(initialValues);
     } catch (err: any) {
       setError(err.message || "Failed to load connector details.");
@@ -281,18 +287,43 @@ export default function TestConsolePage() {
             </div>
 
             {/* Custom API Key Input */}
-            <div className="border border-neutral-200 bg-neutral-50 p-3 space-y-1">
-              <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 flex items-center gap-1">
-                <Key className="w-3 h-3 text-[#DE6E4B]" />
-                <span>Custom API Key (Optional)</span>
-              </label>
+            <div className="border border-neutral-200 bg-neutral-50 p-3 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-mono font-bold uppercase text-neutral-600 flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-[#e07850]" />
+                  <span>Connector API Key (X-API-Key)</span>
+                </label>
+                {connector.slug === "card-scanner" && (
+                  <button
+                    type="button"
+                    onClick={() => setCustomApiKey("uah_card_demo_key_2026_xyz987")}
+                    className="text-[10px] font-mono text-[#e07850] hover:underline font-bold"
+                  >
+                    [Auto-Fill Demo Key]
+                  </button>
+                )}
+                {connector.slug === "content-rewriter" && (
+                  <button
+                    type="button"
+                    onClick={() => setCustomApiKey("uah_rewrite_demo_key_2026_abc123")}
+                    className="text-[10px] font-mono text-[#e07850] hover:underline font-bold"
+                  >
+                    [Auto-Fill Demo Key]
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 value={customApiKey}
                 onChange={(e) => setCustomApiKey(e.target.value)}
-                placeholder="Leave blank to use admin session"
-                className="w-full surge-input text-[11px] py-1.5"
+                placeholder="Enter connector API key (e.g. uah_live_...)"
+                className="w-full surge-input text-[11px] py-1.5 font-mono"
               />
+              <p className="text-[10px] text-neutral-500 font-mono">
+                {customApiKey
+                  ? "✓ Active key configured. Request will be signed with X-API-Key header."
+                  : "Leave blank to invoke using current admin session."}
+              </p>
             </div>
 
             {/* Form Fields */}

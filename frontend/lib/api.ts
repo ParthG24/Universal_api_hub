@@ -224,13 +224,27 @@ export const api = {
     return request<{ id: number; email: string; created_at: string }>("/api/admin/auth/me");
   },
 
-  // Connectors
+  // Connectors (Supports unauthenticated evaluation fallback)
   async listConnectors(): Promise<ConnectorSummary[]> {
-    return request<ConnectorSummary[]>("/api/admin/connectors");
+    if (auth.isAuthenticated()) {
+      try {
+        return await request<ConnectorSummary[]>("/api/admin/connectors");
+      } catch {
+        return request<ConnectorSummary[]>("/api/connectors/public");
+      }
+    }
+    return request<ConnectorSummary[]>("/api/connectors/public");
   },
 
   async getConnector(id: number | string): Promise<Connector> {
-    return request<Connector>(`/api/admin/connectors/${id}`);
+    if (auth.isAuthenticated()) {
+      try {
+        return await request<Connector>(`/api/admin/connectors/${id}`);
+      } catch {
+        return request<Connector>(`/api/connectors/public/${id}`);
+      }
+    }
+    return request<Connector>(`/api/connectors/public/${id}`);
   },
 
   async createConnector(payload: ConnectorCreatePayload): Promise<ConnectorKeyResponse> {
