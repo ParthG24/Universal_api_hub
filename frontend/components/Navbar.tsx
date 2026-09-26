@@ -74,12 +74,20 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="font-mono text-sm uppercase tracking-wider bg-black text-white px-4 py-2 border border-black hover:bg-[#e07850] hover:border-[#e07850] hover:text-black transition-colors"
-            >
-              Get Started
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="font-mono text-xs uppercase tracking-wider text-black hover:text-[#e07850] transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="font-mono text-sm uppercase tracking-wider bg-black text-white px-4 py-2 border border-black hover:bg-[#e07850] hover:border-[#e07850] hover:text-black transition-colors"
+              >
+                Sign Up
+              </Link>
+            </div>
           )}
         </div>
       </div>

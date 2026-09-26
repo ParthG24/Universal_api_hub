@@ -48,6 +48,11 @@ class GeminiProvider(AIProvider):
 
         # Ensure model is cleanly formatted
         clean_model = model.replace("models/", "")
+
+        # Auto-map deprecated or restricted models directly to current flagship
+        DEPRECATED_MODELS = {"gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash-8b"}
+        if clean_model in DEPRECATED_MODELS:
+            clean_model = "gemini-3.8-flash"
         
         # Discover live supported models for this specific Google API key
         active_models = await self._get_active_models()
@@ -55,14 +60,15 @@ class GeminiProvider(AIProvider):
         candidate_models = []
         if clean_model in active_models:
             candidate_models.append(clean_model)
+        elif clean_model not in DEPRECATED_MODELS:
+            candidate_models.append(clean_model)
 
         preferred_models = [
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
             "gemini-2.0-flash",
-            "gemini-2.5-flash",
             "gemini-1.5-flash-latest",
             "gemini-1.5-flash",
-            "gemini-2.0-flash-lite",
-            "gemini-1.5-pro-latest",
             "gemini-1.5-pro",
         ]
 
@@ -72,9 +78,9 @@ class GeminiProvider(AIProvider):
                     candidate_models.append(p)
             # If requested model wasn't active and no preferred found, pick first active
             if not candidate_models:
-                candidate_models.extend(active_models[:3])
+                candidate_models.extend([m for m in active_models if m not in DEPRECATED_MODELS][:3])
         else:
-            candidate_models = [clean_model, "gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash"]
+            candidate_models = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"]
             # Deduplicate while preserving order
             candidate_models = list(dict.fromkeys(candidate_models))
 
@@ -205,12 +211,28 @@ class GeminiProvider(AIProvider):
     def _fallback_models(self) -> List[ModelInfo]:
         return [
             ModelInfo(
-                id="gemini-2.0-flash",
-                name="Gemini 2.0 Flash (Recommended / Fast)",
+                id="gemini-3.8-flash",
+                name="Gemini 3.8 Flash (Flagship / Vision / Ultra-Fast)",
                 provider=self.name,
                 capabilities=["text", "vision"],
                 context_window=1000000,
-                description="Next-generation multimodal model with state-of-the-art vision and JSON reasoning.",
+                description="Google's flagship multimodal model with ultra-fast vision and structured extraction.",
+            ),
+            ModelInfo(
+                id="gemini-3.5-flash",
+                name="Gemini 3.5 Flash (High Efficiency)",
+                provider=self.name,
+                capabilities=["text", "vision"],
+                context_window=1000000,
+                description="High-efficiency multimodal model for reasoning, text and images.",
+            ),
+            ModelInfo(
+                id="gemini-2.0-flash",
+                name="Gemini 2.0 Flash",
+                provider=self.name,
+                capabilities=["text", "vision"],
+                context_window=1000000,
+                description="Fast multimodal model with state-of-the-art vision and JSON reasoning.",
             ),
             ModelInfo(
                 id="gemini-1.5-flash-latest",

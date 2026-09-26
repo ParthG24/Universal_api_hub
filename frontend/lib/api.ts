@@ -212,6 +212,15 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   // Authentication
+  async signup(email: string, password: string) {
+    const data = await request<{ access_token: string; expires_in: number; email: string }>("/api/admin/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    auth.setToken(data.access_token, data.email);
+    return data;
+  },
+
   async login(email: string, password: string) {
     const data = await request<{ access_token: string; expires_in: number; email: string }>("/api/admin/auth/login", {
       method: "POST",

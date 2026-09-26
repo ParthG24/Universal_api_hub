@@ -150,9 +150,6 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
             <a href="#schema-repair" className="hover:text-[#e07850] transition-colors">
               5. Schema Auto-Repair
             </a>
-            <a href="#resume-highlights" className="hover:text-[#e07850] transition-colors">
-              6. Resume Highlights
-            </a>
           </div>
         </div>
 
@@ -650,81 +647,10 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
                 <div className="font-bold text-black uppercase mb-2">3. Shape Normalization</div>
                 <p className="text-neutral-600 text-[11px] leading-relaxed">
                   Ensures all expected keys from your declared schema exist in the final returned payload with appropriate defaults if omitted.
-                </p>
-              </div>
             </div>
           </section>
 
-          {/* SECTION 6: RESUME-READY HIGHLIGHTS */}
-          <section id="resume-highlights" className="scroll-mt-32 border-t border-black pt-16 pb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="font-mono text-xs font-bold text-[#e07850] uppercase tracking-widest">
-                [06 // PORTFOLIO IMPACT]
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-mono font-bold text-black tracking-tight mb-4">
-              Resume-Ready Architectural Talking Points
-            </h2>
-            <p className="text-sm text-neutral-600 max-w-3xl leading-relaxed mb-8">
-              Why this project stands out to engineering hiring managers and technical interviewers:
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="border border-black p-6 bg-white space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#e07850] uppercase">
-                  <Shield className="w-4 h-4" />
-                  Zero-Trust Key Architecture
-                </div>
-                <h3 className="font-mono font-bold text-base text-black">
-                  Cryptographic Key Storage & Parameter Guards
-                </h3>
-                <p className="text-xs text-neutral-600 leading-relaxed">
-                  Provider master keys (Gemini, Groq, OpenAI) remain strictly isolated in backend memory. 
-                  Client API keys use one-way SHA-256 hashing. Connector prompts use structured prompt fencing to prevent parameter injection attacks.
-                </p>
-              </div>
-
-              <div className="border border-black p-6 bg-white space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#e07850] uppercase">
-                  <Cpu className="w-4 h-4" />
-                  Provider Abstraction Layer
-                </div>
-                <h3 className="font-mono font-bold text-base text-black">
-                  Pluggable Adapter Pattern & Offline Fallback
-                </h3>
-                <p className="text-xs text-neutral-600 leading-relaxed">
-                  Decoupled provider interface (<code className="bg-neutral-100 px-1 border text-black font-mono">AIProvider</code>) allowing switching between commercial cloud LLMs (Gemini, Groq, OpenAI) and local open-source models (Ollama) without altering client code.
-                </p>
-              </div>
-
-              <div className="border border-black p-6 bg-white space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#e07850] uppercase">
-                  <Activity className="w-4 h-4" />
-                  Full-Lifecycle Observability
-                </div>
-                <h3 className="font-mono font-bold text-base text-black">
-                  Sub-Millisecond Telemetry & Cost Accounting
-                </h3>
-                <p className="text-xs text-neutral-600 leading-relaxed">
-                  Every API invocation is tracked with microsecond timer precision, input/output token breakdown, dynamic cost estimation, and non-blocking background audit logging.
-                </p>
-              </div>
-
-              <div className="border border-black p-6 bg-white space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#e07850] uppercase">
-                  <Sparkles className="w-4 h-4" />
-                  Developer Experience (DX)
-                </div>
-                <h3 className="font-mono font-bold text-base text-black">
-                  Auto-Generated Live Docs & Visual Playground
-                </h3>
-                <p className="text-xs text-neutral-600 leading-relaxed">
-                  Every connector dynamically renders its own interactive API reference with copyable cURL, Python, and JavaScript snippets, plus an in-browser test console with synthetic data generators.
-                </p>
-              </div>
-            </div>
-
-            {/* CTA Box */}
+          {/* CTA Box */}
             <div className="mt-12 p-8 border-2 border-black bg-neutral-100 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
                 <h3 className="font-mono font-bold text-xl text-black">
