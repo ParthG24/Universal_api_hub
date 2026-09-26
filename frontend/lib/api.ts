@@ -1,6 +1,7 @@
 import { auth } from "./auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const RAW_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = RAW_API_BASE_URL.replace(/\/+$/, "");
 
 export type FieldType = "text" | "number" | "boolean" | "image" | "file" | "json";
 export type ConnectorStatus = "active" | "disabled";
