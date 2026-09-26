@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import CodeBlock from "@/components/CodeBlock";
 import {
   Key,
@@ -90,10 +88,8 @@ ollama pull deepseek-r1:8b       # Local reasoning & coding
 ollama pull llava:latest          # Offline multimodal image recognition`;
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-[#e07850] selection:text-white">
-      <Navbar />
-
-      <main className="pt-28 pb-20">
+    <div className="bg-white text-black selection:bg-[#e07850] selection:text-white pb-20">
+      <div>
         {/* Hero Section */}
         <section className="border-b border-black py-16 px-6 bg-neutral-50/50">
           <div className="max-w-7xl mx-auto">
@@ -755,9 +751,7 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
             </div>
           </section>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }
