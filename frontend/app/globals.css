@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: var(--font-sans), "Inter", system-ui, sans-serif;
+    --font-mono: var(--font-mono), "Space Mono", monospace;
+    --color-surge-orange: #e07850;
+    --color-surge-gray: #f5f5f5;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FFFFFF;
+    color: #000000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-mono, nav, button {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Exact SurgeDB Button Style */
+.btn-surge-black {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: #000000;
+  color: #FFFFFF;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid #000000;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-surge-black:hover:not(:disabled) {
+  background-color: #e07850;
+  border-color: #e07850;
+  color: #000000;
+}
+
+.btn-surge-orange {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: #e07850;
+  color: #000000;
+  padding: 0.65rem 1.5rem;
+  border: 1px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-surge-orange:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000;
+}
+
+.btn-surge-white {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: #FFFFFF;
+  color: #000000;
+  padding: 0.65rem 1.5rem;
+  border: 1px solid #000000;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-surge-white:hover:not(:disabled) {
+  background-color: #f5f5f5;
+}
+
+/* Diagonal Striped Black Banner (Above Footer) */
+.diagonal-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    #000000,
+    #000000 18px,
+    #181818 18px,
+    #181818 36px
+  );
+}
+
+/* Clean Input Styling */
+.surge-input {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  border: 1px solid #000000;
+  padding: 0.65rem 0.85rem;
+  background-color: #FFFFFF;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.surge-input:focus {
+  border-color: #000000;
+  box-shadow: 2px 2px 0px #e07850;
+}

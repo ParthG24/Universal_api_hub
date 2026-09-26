@@ -1,0 +1,335 @@
+================================================================================
+UNIVERSAL AI API CONNECTOR & HUB — HOW IT WORKS
+================================================================================
+
+This document is a comprehensive, plain-language walkthrough of the Universal
+AI API Hub architecture, internal mechanics, and design rationale. It is written
+to be read and understood by engineers, evaluators, and students preparing to
+explain the system during technical interviews or architecture reviews.
+
+--------------------------------------------------------------------------------
+1. THE BIG IDEA: WHY THIS PLATFORM EXISTS
+--------------------------------------------------------------------------------
+Integrating LLMs into modern software is notoriously fragmented. When an
+engineering team needs a "Business Card Scanner", an "Invoice OCR Parser",
+and an "Article Rewriter", developers traditionally write separate ad-hoc
+scripts for each one. Each script ends up hardcoding provider SDKs, API keys,
+system prompts, retry logic, JSON regex cleaners, and usage telemetry.
+
+If Google updates the Gemini SDK or a company switches from OpenAI to Groq for
+cost and latency advantages, multiple codebases must be rewritten, tested, and
+redeployed.
+
+The Universal AI API Hub solves this problem by acting as a central, configurable
+AI Gateway:
+- Non-engineers or administrators can define reusable, typed AI endpoints
+  directly through a visual dashboard.
+- Every endpoint specifies its own system instructions, input parameters,
+  underlying model, and strict output schema.
+- Once created, the platform immediately synthesizes a real, documented REST API
+  endpoint (e.g. POST /api/connectors/card-scanner/invoke) backed by an API key.
+- The platform automatically enforces input bounds, builds injection-resistant
+  prompts, calls the chosen model via an isolated adapter, repairs imperfect
+  JSON responses, logs token consumption and cost telemetry, and returns a
+  standardized JSON envelope.
+
+The core architectural backbone is the "Provider Adapter Pattern", which decouples
+connector definitions from specific AI vendor APIs. The rest of the platform never
+knows whether it is talking to Google, Groq, or OpenAI.
+
+
+--------------------------------------------------------------------------------
+2. REQUEST LIFECYCLE: STEP-BY-STEP WALKTHROUGH
+--------------------------------------------------------------------------------
+What happens when an external client or application sends an HTTP request to:
+POST /api/connectors/card-scanner/invoke
+
+Here is the exact journey of that request through the system:
+
+1. Endpoint Routing & Connector Lookup:
+   FastAPI receives the HTTP POST request at /api/connectors/{slug}/invoke.
+   The invoke service extracts the slug parameter ("card-scanner") and queries
+   the database for a matching connector row.
+   - If no connector matches the slug, execution halts immediately with an HTTP 404
+     and a standardized envelope: {"success": false, "data": null, "error": {"type": "not_found", ...}}.
+   - If the connector exists but its status is "disabled", execution halts with an
+     HTTP 403 {"type": "disabled", ...}.
+
+2. Authentication & Authorization Check:
+   The request looks for an "X-API-Key" header (or an active Admin Bearer JWT if
+   invoked directly from the web dashboard's test console).
+   - The platform takes the raw API key from the header, computes its SHA-256
+     hash, and compares it in constant time against the stored "api_key_hash".
+   - If the hash does not match, the attempt is logged as an "auth_error" and
+     an HTTP 401 is returned. The raw key is never logged or exposed.
+
+3. Body Parsing & Multimodal Ingestion:
+   The request handler inspects the incoming "Content-Type" header.
+   - If the request is "application/json", it decodes the JSON dictionary.
+   - If the request is "multipart/form-data" (common when uploading card photos
+     or documents), FastAPI's async multipart parser extracts the form fields
+     and binary file streams into memory.
+
+4. Dynamic Input Validation:
+   The validator service loops over all "InputField" rows configured for this
+   connector in the database.
+   - For text fields: checks minimum length, maximum length, and optional regex.
+   - For number fields: parses float/int and checks [min, max] boundaries.
+   - For boolean fields: strictly coerces truthy/falsy values ("true", "false", 1, 0).
+   - For images and files: verifies the MIME type against the connector's
+     whitelist (e.g. image/png, image/jpeg, image/webp) and enforces file size
+     ceilings (default 5MB). Images are converted to base64 inline content parts.
+   - If any required field is missing or violates a rule, validation halts
+     immediately with an HTTP 422 {"type": "validation_error", ...} and records
+     the failure in the request logs.
+
+5. Injection-Resistant Prompt Assembly:
+   The Prompt Engine constructs the payload for the AI model:
+   - Admin-authored system prompt: loaded directly from the database.
+   - JSON contract directive: the connector's expected output schema is serialized
+     to JSON and appended to the instructions with an explicit rule requiring the
+     model to respond ONLY with valid JSON.
+   - Untrusted User Input Isolation: user-submitted parameters are cleanly
+     sandwiched between explicit demarcation fences:
+     "=== BEGIN UNTRUSTED USER INPUT ==="
+     [Field: topic]: Digital Marketing
+     "=== END UNTRUSTED USER INPUT ==="
+     This prevents prompt injection attacks where user text tries to override
+     system instructions.
+
+6. Provider Adapter Dispatch:
+   The system retrieves the adapter instance for the connector's provider
+   ("gemini", "groq", "openai", or "ollama") from the ProviderRegistry.
+   The adapter receives the model name, system prompt, content parts (text and
+   inline base64 images), and calls the provider over async HTTP (httpx) with
+   an explicit timeout (30-120 seconds).
+   When Ollama is selected, inference executes locally on the host's GPU/CPU with
+   zero data egress and $0.00 API costs.
+
+7. Output Parsing, Normalization & Auto-Repair:
+   When the AI provider responds with raw text, the SchemaRepairService activates:
+   - Step A: Strips markdown code fences (```json ... ```) and conversational preambles.
+   - Step B: Parses the text into a Python dictionary. If slight syntax errors
+     exist (like trailing commas before closing braces), regex AST repairs are applied.
+   - Step C: Normalizes the dictionary against the connector's output schema.
+     If the model omitted an expected key, the repair engine supplies a safe,
+     type-consistent default (e.g. "" for string, 0 for number, [] for array).
+   - If the text cannot be salvaged as JSON, execution records a "schema_mismatch"
+     error and returns HTTP 502 with a clean message.
+
+8. Fail-Safe Observability & Usage Logging:
+   Regardless of whether the request succeeded or failed, the usage logger runs
+   inside its own isolated try/except block.
+   - Computes execution duration (latency in milliseconds).
+   - Records input tokens, output tokens, and total tokens from model metadata.
+   - Computes estimated cost in USD using the pricing table.
+   - Writes a sanitized preview (no raw binary files, no secrets) to the "request_logs" table.
+   - If the database write fails, it outputs a warning to stderr and still delivers
+     the AI response to the caller without crashing.
+
+9. Delivery of Standardized Response:
+   The client receives HTTP 200 with the standardized envelope:
+   {
+     "success": true,
+     "data": { ... },
+     "error": null,
+     "meta": {
+       "latency_ms": 312.4,
+       "tokens": 420,
+       "estimated_cost": 0.000045,
+       "provider": "gemini",
+       "model": "gemini-1.5-flash"
+     }
+   }
+
+
+--------------------------------------------------------------------------------
+3. HOW TO ADD A NEW AI PROVIDER IN 10 MINUTES
+--------------------------------------------------------------------------------
+The platform was built so adding a new AI provider (e.g. Anthropic Claude,
+Mistral, or a local Ollama server) requires touching ZERO connector or routing code.
+
+Here is the exact procedure:
+
+Step 1: Create the Adapter File
+Create a new file: `backend/app/providers/my_provider.py`
+Subclass `AIProvider` from `app.providers.base`:
+
+```python
+from app.providers.base import AIProvider, ContentPart, ModelInfo, ProviderResult
+from app.providers.pricing import calculate_cost
+import httpx
+
+class MyProvider(AIProvider):
+    name = "my_provider"
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    async def generate(self, model: str, system_prompt: str, user_content: list[ContentPart], response_schema: dict | None) -> ProviderResult:
+        # Call provider's REST endpoint via httpx.AsyncClient...
+        return ProviderResult(
+            raw_text=raw_llm_output,
+            input_tokens=prompt_tokens,
+            output_tokens=completion_tokens,
+            total_tokens=total_tokens,
+            estimated_cost=calculate_cost(model, prompt_tokens, completion_tokens),
+            latency_ms=elapsed_ms,
+        )
+
+    async def list_models(self) -> list[ModelInfo]:
+        # Return list of supported ModelInfo objects
+        return [ModelInfo(id="my-model-1", name="My Model 1", provider=self.name, capabilities=["text"])]
+```
+
+Step 2: Add Model Pricing
+In `backend/app/providers/pricing.py`, add pricing per 1M tokens to `MODEL_PRICING`:
+```python
+"my-model-1": (0.25, 1.00),  # $0.25/1M input, $1.00/1M output
+```
+
+Step 3: Register in ProviderRegistry
+In `backend/app/providers/registry.py`:
+- Import `MyProvider`
+- Add to `self._providers["my_provider"] = MyProvider(api_key=settings.MY_PROVIDER_KEY)`
+
+That's it. The new provider is immediately selectable in the connector creation
+wizard, model discovery automatically works, pricing calculations apply, and
+all invocation pipelines function without modification.
+
+
+--------------------------------------------------------------------------------
+4. HOW THE DYNAMIC INPUT / OUTPUT SYSTEM WORKS
+--------------------------------------------------------------------------------
+A major requirement of this system is that connectors are dynamic: one connector
+might accept an uploaded business card image, while another accepts a text block
+and an integer word count.
+
+How does a database row turn into a UI form control on one side and a validation
+rule on the other?
+
+1. Database Definition:
+   Each connector has a one-to-many relationship with `InputField` rows:
+   - `name`: string identifier (e.g. "image", "tone", "word_count")
+   - `field_type`: "text" | "number" | "boolean" | "image" | "file" | "json"
+   - `required`: boolean
+   - `default_value`: string fallback
+   - `validation_rules`: JSON dictionary (e.g. {"min": 10, "max": 5000})
+
+2. Frontend UI Dynamic Rendering:
+   In `frontend/app/connectors/[id]/test/page.tsx`, the component iterates over
+   `connector.input_fields`:
+   - If `field_type === "image"`, it renders a drag-and-drop file upload zone
+     with instant thumbnail preview and size validation.
+   - If `field_type === "text"`, it renders a styled textarea or input.
+   - If `field_type === "number"`, it renders an HTML5 number input with bounds.
+   - If `field_type === "boolean"`, it renders a brutalist toggle checkbox.
+   - If `field_type === "json"`, it renders a monospace JSON code editor.
+
+3. Backend Validation Engine:
+   When `/invoke` is called, `validate_and_prepare_inputs()` iterates over the
+   exact same `InputField` definitions:
+   - Coerces incoming string/form values into native Python types.
+   - Checks constraints (`min_length`, `max_length`, `regex`, `allowed_mime_types`).
+   - If validation passes, it packages text into formatted blocks and binary
+     data into base64 `ContentPart` objects for the AI provider.
+
+4. Output Schema Contract & Repair:
+   The connector's `output_schema` is stored as JSON.
+   Example: {"name": "string", "company": "string", "email": "string"}
+   - This schema is fed into the prompt engine so the AI knows what keys to output.
+   - When the AI responds, `SchemaRepairService` parses the output, strips any
+     accidental markdown backticks, repairs common JSON syntax quirks, and verifies
+     that every key in the expected schema exists in the resulting dictionary.
+
+
+--------------------------------------------------------------------------------
+5. USAGE STATS AND COST ESTIMATES
+--------------------------------------------------------------------------------
+Every single invocation writes a persistent record to the `request_logs` table:
+- `response_time_ms`: computed using high-resolution monotonic time (`time.perf_counter()`)
+  measuring from the moment the request hits the endpoint to completion.
+- `input_tokens` and `output_tokens`: extracted directly from the upstream provider's
+  response metadata:
+  - Gemini: `response.json()["usageMetadata"]["promptTokenCount"]`
+  - Groq & OpenAI: `response.json()["usage"]["prompt_tokens"]`
+- `estimated_cost`: computed by `calculate_cost(model, input_tokens, output_tokens)`.
+  The pricing catalog stores price-per-million input and output tokens based on
+  public pricing (e.g. Gemini 1.5 Flash is $0.075/1M input, $0.30/1M output).
+
+Limitations & Caveats:
+- When a request fails before reaching the AI provider (such as an auth failure
+  or input validation error), tokens and cost are logged as 0.0 because no AI
+  inference occurred.
+- Free tier models (like Groq's developer tier) are priced in the table according
+  to standard retail equivalence so developers can forecast production costs.
+
+
+--------------------------------------------------------------------------------
+6. THE SECURITY MODEL
+--------------------------------------------------------------------------------
+The platform enforces defense-in-depth across all layers:
+
+1. Secret Isolation:
+   - Provider API keys (`GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`) live
+     strictly in server-side environment variables.
+   - They are NEVER sent to the browser, NEVER exposed in API responses, NEVER
+     rendered in generated documentation, and NEVER written to application logs.
+
+2. Connector API Keys:
+   - External callers authenticate with unique connector keys (e.g. `uah_card_demo_key_...`).
+   - When a connector is created or its key is rotated, the raw key is displayed
+     to the administrator EXACTLY ONCE.
+   - The database stores only a SHA-256 hash (`api_key_hash`). Even if the database
+     were compromised, attackers cannot retrieve the original keys.
+
+3. Admin Dashboard Authentication:
+   - The dashboard is protected by JWT access tokens signed with HMAC-SHA256
+     using `SECRET_KEY` with an expiration window.
+   - Admin passwords are encrypted using native `bcrypt` with unique salts.
+   - Public signup is disabled; only seeded or explicitly created admins can log in.
+
+4. Threat Scenario Analysis:
+   - Scenario A: Attacker obtains a Connector API Key.
+     Impact: They can invoke that specific connector up to configured quotas.
+     They CANNOT modify connector settings, CANNOT read other connectors, CANNOT
+     view provider secrets, and CANNOT access the admin dashboard.
+   - Scenario B: Attacker obtains the Admin JWT.
+     Impact: They can configure connectors, rotate keys, and view logs.
+     They CANNOT retrieve existing connector API keys (stored only as hashes) and
+     CANNOT extract raw AI provider keys (kept in backend environment variables).
+   - Scenario C: External caller attempts Prompt Injection.
+     Impact: Untrusted inputs are demarcated in delimited sections, and the output
+     validator forces the final structure into the configured JSON schema,
+     preventing prompt overrides from hijacking system behavior.
+
+
+--------------------------------------------------------------------------------
+7. DEPLOYMENT TOPOLOGY & DATA PERSISTENCE
+--------------------------------------------------------------------------------
+1. Frontend Layer:
+   - Hosted on Vercel as a Next.js 14+ application.
+   - Configured with `NEXT_PUBLIC_API_URL` pointing to the live FastAPI backend.
+   - Completely stateless; admin session tokens are held in browser storage.
+
+2. Backend Layer:
+   - Hosted on Render, Railway, or Fly.io as a persistent containerized service (Dockerfile).
+   - Runs `python -m uvicorn app.main:app` with async worker pooling.
+   - Provider keys and database connection strings are passed as environment variables.
+
+3. Database Layer:
+   - Hosted on a managed PostgreSQL service (e.g. Neon or Supabase).
+   - Connected via SQLAlchemy 2.0 connection pool with SSL enabled.
+   - Because the database is hosted independently of the application container,
+     restarts, redeployments, or container scaling never cause data loss. All
+     connectors, input definitions, and historical request logs persist permanently.
+
+4. Cold-Start Behavior:
+   - On free hosting tiers (such as Render free web services), the backend container
+     may spin down after 15 minutes of inactivity. The first request after sleep
+     may experience a 20-30 second cold-start delay while the container starts.
+     Subsequent requests execute at normal sub-second latencies.
+
+================================================================================
+END OF HOW_IT_WORKS.txt
+================================================================================
