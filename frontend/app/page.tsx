@@ -106,7 +106,7 @@ console.log("Tokens Consumed:", meta.tokens);`;
                 href="/signup"
                 className="btn-surge-black text-xs px-6 py-3 inline-block font-mono font-bold tracking-wider"
               >
-                SIGN UP FREE &rarr;
+                SIGN UP FREE
               </Link>
               <Link
                 href="/connectors/content-rewriter/test"

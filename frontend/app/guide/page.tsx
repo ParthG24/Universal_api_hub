@@ -113,7 +113,7 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
                 href="#quick-start"
                 className="btn-surge btn-surge-black px-6 py-3"
               >
-                Quick Start &rarr;
+                Quick Start →
               </a>
               <a
                 href="#ollama-offline"
@@ -665,7 +665,7 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
                   href="/login"
                   className="btn-surge btn-surge-black px-6 py-3 font-mono text-xs"
                 >
-                  Sign In to Console &rarr;
+                  Sign In to Console →
                 </Link>
                 <Link
                   href="/connectors/card-scanner/test"

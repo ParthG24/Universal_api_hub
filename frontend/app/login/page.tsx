@@ -137,7 +137,7 @@ export function LoginForm({ defaultMode }: { defaultMode?: "login" | "signup" })
                 onClick={() => switchMode("signup")}
                 className="font-bold text-black hover:text-[#DE6E4B] underline"
               >
-                Sign Up Here &rarr;
+                Sign Up Here
               </button>
             </div>
           </div>
@@ -209,8 +209,8 @@ export function LoginForm({ defaultMode }: { defaultMode?: "login" | "signup" })
                 ? "Creating Account..."
                 : "Authenticating..."
               : mode === "signup"
-              ? "Create Account →"
-              : "Sign In →"}
+              ? "Create Account"
+              : "Sign In"}
           </button>
 
           <div className="text-center pt-3 border-t border-neutral-200">
@@ -222,7 +222,7 @@ export function LoginForm({ defaultMode }: { defaultMode?: "login" | "signup" })
                   onClick={() => switchMode("signup")}
                   className="font-bold text-black underline hover:text-[#DE6E4B] transition-colors"
                 >
-                  Create Account (Sign Up Free) &rarr;
+                  Create Account (Sign Up Free)
                 </button>
               </p>
             ) : (
@@ -233,7 +233,7 @@ export function LoginForm({ defaultMode }: { defaultMode?: "login" | "signup" })
                   onClick={() => switchMode("login")}
                   className="font-bold text-black underline hover:text-[#DE6E4B] transition-colors"
                 >
-                  Sign In Here &rarr;
+                  Sign In Here
                 </button>
               </p>
             )}

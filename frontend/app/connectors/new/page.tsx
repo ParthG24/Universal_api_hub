@@ -240,7 +240,7 @@ export default function NewConnectorPage() {
               href={`/connectors/${createdResult.id}/test`}
               className="btn-surge btn-surge-orange text-xs py-3 px-6"
             >
-              Open Test Console &rarr;
+              Open Test Console →
             </Link>
             <Link
               href="/dashboard"
