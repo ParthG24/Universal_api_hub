@@ -190,13 +190,35 @@ def seed_database():
                 order=1,
             ))
             print("[Seed] Created Connector C: Sentiment Analyzer")
-        else:
-            if sentiment.model in ["llama-3.3-70b-versatile", "llama3-70b-8192"]:
-                sentiment.model = "llama-3.1-8b-instant"
-                db.add(sentiment)
-                print("[Seed] Upgraded sentiment-analyzer model to llama-3.1-8b-instant")
+        # 5. Migrate any existing database connectors using decommissioned or retired models
+        DECOMMISSIONED_GROQ = {
+            "gemma2-9b-it", "gemma-7b-it", "mixtral-8x7b-32768",
+            "llama3-8b-8192", "llama3-70b-8192", "llama-3.3-70b-versatile",
+            "llama-3.2-1b-preview", "llama-3.2-3b-preview",
+            "llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"
+        }
+        all_groq_connectors = db.query(Connector).filter(Connector.provider == "groq").all()
+        for gc in all_groq_connectors:
+            if gc.model in DECOMMISSIONED_GROQ or any(d in gc.model.lower() for d in ["gemma", "mixtral", "llama3-", "preview"]):
+                old_m = gc.model
+                gc.model = "llama-3.1-8b-instant"
+                db.add(gc)
+                print(f"[Seed] Upgraded Groq connector '{gc.slug}' model from {old_m} to llama-3.1-8b-instant")
 
-        # 5. Seed initial sample logs for immediate dashboard metrics
+        RETIRED_GEMINI = {
+            "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash",
+            "gemini-1.5-flash-8b", "gemini-1.5-flash-latest", "gemini-1.5-pro",
+            "gemini-2.5-flash", "gemini-2.5-pro"
+        }
+        all_gemini_connectors = db.query(Connector).filter(Connector.provider == "gemini").all()
+        for gmc in all_gemini_connectors:
+            if gmc.model in RETIRED_GEMINI:
+                old_m = gmc.model
+                gmc.model = "gemini-3.8-flash"
+                db.add(gmc)
+                print(f"[Seed] Upgraded Gemini connector '{gmc.slug}' model from {old_m} to gemini-3.8-flash")
+
+        # 6. Seed initial sample logs for immediate dashboard metrics
         db.flush()
         sample_logs_count = db.query(RequestLog).count()
         if sample_logs_count == 0 and card_scanner and rewriter and sentiment:

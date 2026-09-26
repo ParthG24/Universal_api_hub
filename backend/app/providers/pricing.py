@@ -11,8 +11,10 @@ MODEL_PRICING: Dict[str, Tuple[float, float]] = {
     "gemini-1.5-flash": (0.075, 0.30),
     
     # Groq Models (extremely cost effective / fast)
-    "llama-3.3-70b-versatile": (0.59, 0.79),
     "llama-3.1-8b-instant": (0.05, 0.08),
+    "llama-3.3-70b-versatile": (0.59, 0.79),
+    "openai/gpt-oss-20b": (0.10, 0.10),
+    "openai/gpt-oss-120b": (0.50, 0.50),
     "llama3-70b-8192": (0.59, 0.79),
     "llama3-8b-8192": (0.05, 0.08),
     "mixtral-8x7b-32768": (0.24, 0.24),

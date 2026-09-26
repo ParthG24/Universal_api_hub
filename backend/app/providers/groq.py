@@ -5,6 +5,23 @@ import httpx
 from app.providers.base import AIProvider, ContentPart, ModelInfo, ProviderResult
 from app.providers.pricing import calculate_cost
 
+# Known decommissioned or deprecated Groq models (as per https://console.groq.com/docs/deprecations)
+DECOMMISSIONED_GROQ_MODELS = {
+    "gemma2-9b-it",
+    "gemma-7b-it",
+    "mixtral-8x7b-32768",
+    "llama3-8b-8192",
+    "llama3-70b-8192",
+    "llama-3.2-1b-preview",
+    "llama-3.2-3b-preview",
+    "llama-3.2-11b-vision-preview",
+    "llama-3.2-90b-vision-preview",
+    "llama-3.2-11b-text-preview",
+    "llama-3.2-90b-text-preview",
+    "groq/compound",
+    "groq/compound-mini",
+}
+
 
 class GroqProvider(AIProvider):
     name = "groq"
@@ -12,6 +29,37 @@ class GroqProvider(AIProvider):
     def __init__(self, api_key: str):
         self.api_key = api_key.strip()
         self.base_url = "https://api.groq.com/openai/v1"
+        self._cached_active_models: List[str] = []
+
+    async def _get_active_models(self) -> List[str]:
+        if not self.api_key:
+            return []
+        if self._cached_active_models:
+            return self._cached_active_models
+        endpoint = f"{self.base_url}/models"
+        headers = {"Authorization": f"Bearer {self.api_key}"}
+        try:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                res = await client.get(endpoint, headers=headers)
+                if res.status_code == 200:
+                    data = res.json()
+                    active = []
+                    for m in data.get("data", []):
+                        mid = m.get("id", "")
+                        # Exclude decommissioned or inactive models
+                        if m.get("active", True) is False:
+                            continue
+                        if mid in DECOMMISSIONED_GROQ_MODELS:
+                            continue
+                        if any(term in mid.lower() for term in ["gemma", "mixtral", "llama3-", "preview", "compound"]):
+                            continue
+                        active.append(mid)
+                    if active:
+                        self._cached_active_models = active
+                        return active
+        except Exception:
+            pass
+        return []
 
     async def generate(
         self,
@@ -49,21 +97,33 @@ class GroqProvider(AIProvider):
         combined_user_text = "\n\n".join(user_text_parts) if user_text_parts else "Generate JSON output."
         messages.append({"role": "user", "content": combined_user_text})
 
-        # Build candidate list prioritizing reliable 100% free models
+        # Clean and remap model if decommissioned
         clean_model = model.strip()
+        is_decommissioned = (
+            clean_model.lower() in DECOMMISSIONED_GROQ_MODELS
+            or any(term in clean_model.lower() for term in ["gemma", "mixtral", "llama3-", "preview", "compound"])
+        )
+        if is_decommissioned or not clean_model:
+            clean_model = "llama-3.1-8b-instant"
+
+        # Build candidate list prioritizing reliable 100% free models
         candidate_models = []
         if clean_model:
             candidate_models.append(clean_model)
 
-        # Guaranteed active free-tier models on Groq Console (30 RPM, 14,400 RPD)
-        free_fallbacks = ["llama-3.1-8b-instant", "gemma2-9b-it", "mixtral-8x7b-32768"]
-        for fb in free_fallbacks:
+        # Guaranteed active free-tier production models on Groq Console (30 RPM, 14,400 RPD)
+        active_fallbacks = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "openai/gpt-oss-20b"]
+        for fb in active_fallbacks:
             if fb not in candidate_models:
                 candidate_models.append(fb)
 
-        # If clean_model was a known restricted 70b model, put llama-3.1-8b-instant first
+        # If clean_model was a 70b model (which might hit rate limits or 404 access restrictions on some free accounts),
+        # prioritize llama-3.1-8b-instant first for 100% reliability
         if "70b" in clean_model.lower():
             candidate_models = ["llama-3.1-8b-instant"] + [m for m in candidate_models if m != "llama-3.1-8b-instant"]
+
+        # Deduplicate while preserving order
+        candidate_models = list(dict.fromkeys(candidate_models))
 
         start_time = time.perf_counter()
         last_error = ""
@@ -90,13 +150,13 @@ class GroqProvider(AIProvider):
             if response.status_code == 200:
                 actual_model = m_name
                 break
+            elif response.status_code == 401:
+                raise RuntimeError("Groq API authentication failed (401). Please verify your GROQ_API_KEY environment variable on Render.")
             else:
                 last_error = f"Groq API returned {response.status_code}: {response.text}"
-                # If model not found (404), rate limited (429), or unavailable (503), try next candidate
-                if response.status_code in [404, 429, 503]:
-                    continue
-                else:
-                    raise RuntimeError(last_error)
+                # For decommissioned models (400), not found (404), rate limit (429), or server errors (500, 502, 503),
+                # continue to next candidate model
+                continue
         else:
             raise RuntimeError(last_error)
 
@@ -140,14 +200,20 @@ class GroqProvider(AIProvider):
                     models = []
                     for m in data.get("data", []):
                         mid = m.get("id", "")
-                        # Filter for chat completion models
-                        if any(k in mid for k in ["llama", "mixtral", "gemma"]):
+                        if m.get("active", True) is False:
+                            continue
+                        if mid in DECOMMISSIONED_GROQ_MODELS:
+                            continue
+                        if any(term in mid.lower() for term in ["gemma", "mixtral", "llama3-", "preview", "compound"]):
+                            continue
+                        # Include active production chat completion models
+                        if any(k in mid.lower() for k in ["llama-3.1", "llama-3.3", "gpt-oss", "qwen"]):
                             models.append(ModelInfo(
                                 id=mid,
                                 name=mid,
                                 provider=self.name,
                                 capabilities=["text"],
-                                context_window=m.get("context_window", 8192),
+                                context_window=m.get("context_window", 128000),
                             ))
                     if models:
                         return sorted(models, key=lambda x: x.id)
@@ -160,34 +226,26 @@ class GroqProvider(AIProvider):
         return [
             ModelInfo(
                 id="llama-3.1-8b-instant",
-                name="Llama 3.1 8B Instant (Ultra-Fast & Free)",
+                name="Llama 3.1 8B Instant (100% Free Tier Guaranteed)",
                 provider=self.name,
                 capabilities=["text"],
                 context_window=128000,
-                description="Ultra-low latency model for high-throughput text and JSON tasks on Groq Free Tier.",
-            ),
-            ModelInfo(
-                id="gemma2-9b-it",
-                name="Gemma 2 9B IT",
-                provider=self.name,
-                capabilities=["text"],
-                context_window=8192,
-                description="Google's high-efficiency lightweight instruction model.",
-            ),
-            ModelInfo(
-                id="mixtral-8x7b-32768",
-                name="Mixtral 8x7B (MoE)",
-                provider=self.name,
-                capabilities=["text"],
-                context_window=32768,
-                description="High quality Mixture of Experts architecture.",
+                description="Ultra-low latency model for high-throughput text and JSON tasks on Groq Free Tier (30 RPM, 14,400 RPD).",
             ),
             ModelInfo(
                 id="llama-3.3-70b-versatile",
-                name="Llama 3.3 70B Versatile",
+                name="Llama 3.3 70B Versatile (Flagship)",
                 provider=self.name,
                 capabilities=["text"],
                 context_window=128000,
-                description="State-of-the-art open-weights model with massive context window.",
+                description="State-of-the-art open-weights model with massive 128k context window.",
+            ),
+            ModelInfo(
+                id="openai/gpt-oss-20b",
+                name="OpenAI GPT OSS 20B",
+                provider=self.name,
+                capabilities=["text"],
+                context_window=128000,
+                description="OpenAI open-weight model hosted on Groq high-speed LPU inference.",
             ),
         ]

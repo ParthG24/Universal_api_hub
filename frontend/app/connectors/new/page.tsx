@@ -96,8 +96,8 @@ export default function NewConnectorPage() {
       setAvailableModels(models);
       if (models.length > 0) setModel(models[0].id);
     } catch {
-      if (provName === "gemini") setModel("gemini-1.5-flash");
-      else if (provName === "groq") setModel("llama-3.3-70b-versatile");
+      if (provName === "gemini") setModel("gemini-3.8-flash");
+      else if (provName === "groq") setModel("llama-3.1-8b-instant");
       else if (provName === "openai") setModel("gpt-4o-mini");
       else if (provName === "ollama") setModel("llama3.2:latest");
     }
