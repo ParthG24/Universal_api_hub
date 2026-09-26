@@ -43,23 +43,30 @@ A production-style developer platform where administrators can define, deploy, t
 
 ---
 
-## 3. Pre-Seeded Demonstration Connectors
+## 3. Pre-Seeded Demonstration Connectors (100% Free Tiers)
 
-The platform comes pre-seeded with two fully functional demo connectors:
+The platform comes pre-seeded with three fully functional demonstration connectors running exclusively on zero-cost, high-reliability free tiers:
 
 ### Connector A — Business Card Scanner (`card-scanner`)
-- **Engine:** Google Gemini (`gemini-1.5-flash`)
+- **Engine:** Google Gemini (`gemini-2.0-flash` / `gemini-1.5-flash` - 100% Free Tier)
 - **Type:** Multimodal Vision → Structured JSON
 - **Inputs:** `image` (binary file / photo, required)
 - **Output Schema:** `{ "name": "string", "company": "string", "designation": "string", "phone": "string", "email": "string", "website": "string" }`
 - **Pre-Seeded API Key:** `uah_card_demo_key_2026_xyz987`
 
 ### Connector B — Content Rewriter (`content-rewriter`)
-- **Engine:** Groq (`llama-3.3-70b-versatile` / `llama-3.1-8b-instant`)
+- **Engine:** Groq (`llama-3.1-8b-instant` - 100% Free Tier, 30 RPM, 14,400 RPD)
 - **Type:** High-Speed Text Inference → Structured JSON
 - **Inputs:** `text` (required), `tone` (optional, default `"professional"`), `word_count` (optional number)
 - **Output Schema:** `{ "rewritten_text": "string", "word_count": "number" }`
 - **Pre-Seeded API Key:** `uah_rewrite_demo_key_2026_abc123`
+
+### Connector C — Sentiment Analyzer (`sentiment-analyzer`)
+- **Engine:** Groq (`llama-3.1-8b-instant` - 100% Free Tier, ~180ms latency)
+- **Type:** Customer Feedback & Emotion Analysis → Structured JSON
+- **Inputs:** `text` (required), `domain` (optional, default `"general"`)
+- **Output Schema:** `{ "sentiment": "string", "score": "number", "emotional_tone": "string", "key_drivers": "array", "summary": "string" }`
+- **Pre-Seeded API Key:** `uah_sentiment_demo_key_2026_sen456`
 
 ---
 
@@ -160,11 +167,11 @@ curl -X POST "http://localhost:8000/api/connectors/content-rewriter/invoke" \
   },
   "error": null,
   "meta": {
-    "latency_ms": 284.1,
-    "tokens": 142,
-    "estimated_cost": 0.000084,
+    "latency_ms": 182.4,
+    "tokens": 128,
+    "estimated_cost": 0.000019,
     "provider": "groq",
-    "model": "llama-3.3-70b-versatile"
+    "model": "llama-3.1-8b-instant"
   }
 }
 ```
@@ -176,7 +183,18 @@ curl -X POST "http://localhost:8000/api/connectors/card-scanner/invoke" \
   -F "image=@/path/to/business_card.png"
 ```
 
-### Example 3: Python (`requests`)
+### Example 3: cURL (Sentiment Analyzer)
+```bash
+curl -X POST "http://localhost:8000/api/connectors/sentiment-analyzer/invoke" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: uah_sentiment_demo_key_2026_sen456" \
+  -d '{
+    "text": "The platform was exceptionally responsive and solved our problem immediately!",
+    "domain": "customer_support"
+  }'
+```
+
+### Example 4: Python (`requests`)
 ```python
 import requests
 

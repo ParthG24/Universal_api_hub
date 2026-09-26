@@ -79,12 +79,18 @@ export default function TestConsolePage() {
           "Universal AI Hub empowers engineering teams to rapidly create and deploy custom, multi-provider AI APIs with automatic schema repair and observability.";
         initialValues["tone"] = "excited";
         initialValues["word_count"] = 30;
+      } else if (c.slug === "sentiment-analyzer" && !initialValues["text"]) {
+        initialValues["text"] =
+          "The customer support team resolved my issue in under 5 minutes. The platform is incredibly fast and dependable!";
+        initialValues["domain"] = "customer_support";
       }
 
       if (c.slug === "card-scanner" && !customApiKey) {
         setCustomApiKey("uah_card_demo_key_2026_xyz987");
       } else if (c.slug === "content-rewriter" && !customApiKey) {
         setCustomApiKey("uah_rewrite_demo_key_2026_abc123");
+      } else if (c.slug === "sentiment-analyzer" && !customApiKey) {
+        setCustomApiKey("uah_sentiment_demo_key_2026_sen456");
       }
 
       setFormValues(initialValues);
@@ -306,6 +312,15 @@ export default function TestConsolePage() {
                   <button
                     type="button"
                     onClick={() => setCustomApiKey("uah_rewrite_demo_key_2026_abc123")}
+                    className="text-[10px] font-mono text-[#e07850] hover:underline font-bold"
+                  >
+                    [Auto-Fill Demo Key]
+                  </button>
+                )}
+                {connector.slug === "sentiment-analyzer" && (
+                  <button
+                    type="button"
+                    onClick={() => setCustomApiKey("uah_sentiment_demo_key_2026_sen456")}
                     className="text-[10px] font-mono text-[#e07850] hover:underline font-bold"
                   >
                     [Auto-Fill Demo Key]

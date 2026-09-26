@@ -49,26 +49,58 @@ class GroqProvider(AIProvider):
         combined_user_text = "\n\n".join(user_text_parts) if user_text_parts else "Generate JSON output."
         messages.append({"role": "user", "content": combined_user_text})
 
-        payload = {
-            "model": model,
-            "messages": messages,
-            "temperature": 0.2,
-            "response_format": {"type": "json_object"},
-        }
+        # Build candidate list prioritizing reliable 100% free models
+        clean_model = model.strip()
+        candidate_models = []
+        if clean_model:
+            candidate_models.append(clean_model)
+
+        # Guaranteed active free-tier models on Groq Console (30 RPM, 14,400 RPD)
+        free_fallbacks = ["llama-3.1-8b-instant", "gemma2-9b-it", "mixtral-8x7b-32768"]
+        for fb in free_fallbacks:
+            if fb not in candidate_models:
+                candidate_models.append(fb)
+
+        # If clean_model was a known restricted 70b model, put llama-3.1-8b-instant first
+        if "70b" in clean_model.lower():
+            candidate_models = ["llama-3.1-8b-instant"] + [m for m in candidate_models if m != "llama-3.1-8b-instant"]
 
         start_time = time.perf_counter()
-        async with httpx.AsyncClient(timeout=45.0) as client:
-            try:
-                response = await client.post(endpoint, headers=headers, json=payload)
-            except httpx.TimeoutException:
-                raise TimeoutError("Groq request timed out after 45 seconds.")
-            except Exception as e:
-                raise RuntimeError(f"Network error calling Groq: {str(e)}")
+        last_error = ""
+        actual_model = clean_model
+        response = None
+
+        for m_name in candidate_models:
+            payload = {
+                "model": m_name,
+                "messages": messages,
+                "temperature": 0.2,
+                "response_format": {"type": "json_object"},
+            }
+            async with httpx.AsyncClient(timeout=45.0) as client:
+                try:
+                    response = await client.post(endpoint, headers=headers, json=payload)
+                except httpx.TimeoutException:
+                    last_error = f"Groq request to '{m_name}' timed out after 45 seconds."
+                    continue
+                except Exception as e:
+                    last_error = f"Network error calling Groq ({m_name}): {str(e)}"
+                    continue
+
+            if response.status_code == 200:
+                actual_model = m_name
+                break
+            else:
+                last_error = f"Groq API returned {response.status_code}: {response.text}"
+                # If model not found (404), rate limited (429), or unavailable (503), try next candidate
+                if response.status_code in [404, 429, 503]:
+                    continue
+                else:
+                    raise RuntimeError(last_error)
+        else:
+            raise RuntimeError(last_error)
 
         latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
-
-        if response.status_code != 200:
-            raise RuntimeError(f"Groq API returned {response.status_code}: {response.text}")
 
         data = response.json()
         choices = data.get("choices", [])
@@ -82,7 +114,7 @@ class GroqProvider(AIProvider):
         output_tokens = usage.get("completion_tokens", 0)
         total_tokens = usage.get("total_tokens", input_tokens + output_tokens)
 
-        cost = calculate_cost(model, input_tokens, output_tokens)
+        cost = calculate_cost(actual_model, input_tokens, output_tokens)
 
         return ProviderResult(
             raw_text=raw_text,
@@ -127,20 +159,20 @@ class GroqProvider(AIProvider):
     def _fallback_models(self) -> List[ModelInfo]:
         return [
             ModelInfo(
-                id="llama-3.3-70b-versatile",
-                name="Llama 3.3 70B Versatile",
+                id="llama-3.1-8b-instant",
+                name="Llama 3.1 8B Instant (Ultra-Fast & Free)",
                 provider=self.name,
                 capabilities=["text"],
                 context_window=128000,
-                description="State-of-the-art open-weights model with massive context window.",
+                description="Ultra-low latency model for high-throughput text and JSON tasks on Groq Free Tier.",
             ),
             ModelInfo(
-                id="llama-3.1-8b-instant",
-                name="Llama 3.1 8B Instant (Ultra Fast)",
+                id="gemma2-9b-it",
+                name="Gemma 2 9B IT",
                 provider=self.name,
                 capabilities=["text"],
-                context_window=128000,
-                description="Ultra-low latency model for high-throughput text and JSON tasks.",
+                context_window=8192,
+                description="Google's high-efficiency lightweight instruction model.",
             ),
             ModelInfo(
                 id="mixtral-8x7b-32768",
@@ -149,5 +181,13 @@ class GroqProvider(AIProvider):
                 capabilities=["text"],
                 context_window=32768,
                 description="High quality Mixture of Experts architecture.",
+            ),
+            ModelInfo(
+                id="llama-3.3-70b-versatile",
+                name="Llama 3.3 70B Versatile",
+                provider=self.name,
+                capabilities=["text"],
+                context_window=128000,
+                description="State-of-the-art open-weights model with massive context window.",
             ),
         ]

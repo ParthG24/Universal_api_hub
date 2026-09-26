@@ -27,9 +27,9 @@ curl -X POST "http://localhost:8000/api/connectors/content-rewriter/invoke" \\
 #   "meta": {
 #     "latency_ms": 210.4,
 #     "tokens": 128,
-#     "estimated_cost": 0.000076,
+#     "estimated_cost": 0.000019,
 #     "provider": "groq",
-#     "model": "llama-3.3-70b-versatile"
+#     "model": "llama-3.1-8b-instant"
 #   }
 # }`;
 
@@ -374,77 +374,120 @@ console.log("Tokens Consumed:", meta.tokens);`;
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card A */}
-            <div className="border border-black bg-white p-8 space-y-6">
-              <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-black">
-                  Connector A • Multimodal Vision
-                </span>
-                <span className="font-mono text-[11px] text-neutral-500 uppercase">
-                  Google Gemini 1.5 Flash
-                </span>
+            <div className="border border-black bg-white p-7 space-y-5 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-black">
+                    Connector A • Vision
+                  </span>
+                  <span className="font-mono text-[10px] text-[#e07850] font-bold uppercase">
+                    Gemini 2.0 Flash (Free)
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-mono font-bold uppercase text-black">
+                    Business Card Scanner
+                  </h3>
+                  <p className="font-sans text-xs text-neutral-600 mt-2 leading-relaxed">
+                    Accepts a business card photo, passes it to Gemini Vision, and extracts
+                    name, company, title, phone, email, and website into structured JSON.
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3 className="text-2xl font-mono font-bold uppercase text-black">
-                  Business Card Scanner
-                </h3>
-                <p className="font-sans text-xs text-neutral-600 mt-2 leading-relaxed">
-                  Accepts a business card photo, passes it to Gemini Vision, and extracts
-                  name, company, title, phone, email, and website into structured JSON.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-2 pt-2">
                 <Link
                   href="/connectors/card-scanner/test"
-                  className="btn-surge-orange"
+                  className="btn-surge-orange text-xs py-2 px-3 flex-1 text-center"
                 >
                   Test In Playground
                 </Link>
                 <Link
                   href="/connectors/card-scanner/docs"
-                  className="btn-surge-white"
+                  className="btn-surge-white text-xs py-2 px-3 text-center"
                 >
-                  View Docs
+                  Docs
                 </Link>
               </div>
             </div>
 
             {/* Card B */}
-            <div className="border border-black bg-white p-8 space-y-6">
-              <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-black">
-                  Connector B • High-Speed Text
-                </span>
-                <span className="font-mono text-[11px] text-neutral-500 uppercase">
-                  Groq Llama 3.3
-                </span>
+            <div className="border border-black bg-white p-7 space-y-5 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-black">
+                    Connector B • High-Speed Text
+                  </span>
+                  <span className="font-mono text-[10px] text-[#e07850] font-bold uppercase">
+                    Groq Llama 3.1 (Free)
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-mono font-bold uppercase text-black">
+                    Content Rewriter
+                  </h3>
+                  <p className="font-sans text-xs text-neutral-600 mt-2 leading-relaxed">
+                    Rewrites copy, blogs, and technical notes into targeted tones and word counts with
+                    ultra-low latency on Groq LPUs.
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3 className="text-2xl font-mono font-bold uppercase text-black">
-                  Content Rewriter
-                </h3>
-                <p className="font-sans text-xs text-neutral-600 mt-2 leading-relaxed">
-                  Rewrites articles or copy into targeted tones and word counts with
-                  ultra-low inference latency on Groq LPUs.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-2 pt-2">
                 <Link
                   href="/connectors/content-rewriter/test"
-                  className="btn-surge-orange"
+                  className="btn-surge-orange text-xs py-2 px-3 flex-1 text-center"
                 >
                   Test In Playground
                 </Link>
                 <Link
                   href="/connectors/content-rewriter/docs"
-                  className="btn-surge-white"
+                  className="btn-surge-white text-xs py-2 px-3 text-center"
                 >
-                  View Docs
+                  Docs
+                </Link>
+              </div>
+            </div>
+
+            {/* Card C */}
+            <div className="border border-black bg-white p-7 space-y-5 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-black">
+                    Connector C • Sentiment
+                  </span>
+                  <span className="font-mono text-[10px] text-[#e07850] font-bold uppercase">
+                    Groq Llama 3.1 (Free)
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-mono font-bold uppercase text-black">
+                    Sentiment Analyzer
+                  </h3>
+                  <p className="font-sans text-xs text-neutral-600 mt-2 leading-relaxed">
+                    Analyzes customer feedback and reviews to extract sentiment polarity,
+                    emotional tone score, and key opinion drivers in milliseconds.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <Link
+                  href="/connectors/sentiment-analyzer/test"
+                  className="btn-surge-orange text-xs py-2 px-3 flex-1 text-center"
+                >
+                  Test In Playground
+                </Link>
+                <Link
+                  href="/connectors/sentiment-analyzer/docs"
+                  className="btn-surge-white text-xs py-2 px-3 text-center"
+                >
+                  Docs
                 </Link>
               </div>
             </div>

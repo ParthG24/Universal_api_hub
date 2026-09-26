@@ -20,6 +20,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
+
+@app.on_event("startup")
+async def startup_event():
+    try:
+        from app.seed import seed_database
+        seed_database()
+    except Exception as e:
+        logger.error(f"Startup database seeding warning: {e}")
+
 # CORS Middleware configuration
 app.add_middleware(
     CORSMiddleware,

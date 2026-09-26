@@ -7,6 +7,7 @@ from app.core.security import get_password_hash, hash_api_key
 
 DEMO_CARD_SCANNER_KEY = "uah_card_demo_key_2026_xyz987"
 DEMO_REWRITER_KEY = "uah_rewrite_demo_key_2026_abc123"
+DEMO_SENTIMENT_KEY = "uah_sentiment_demo_key_2026_sen456"
 
 
 def seed_database():
@@ -28,7 +29,7 @@ def seed_database():
         else:
             print(f"[Seed] Admin already exists: {admin.email}")
 
-        # 2. Seed Connector A: Business Card Scanner
+        # 2. Seed Connector A: Business Card Scanner (Gemini 2.0 Flash - 100% Free / High Stability)
         card_scanner = db.query(Connector).filter(Connector.slug == "card-scanner").first()
         if not card_scanner:
             card_scanner = Connector(
@@ -36,7 +37,7 @@ def seed_database():
                 name="Business Card Scanner",
                 description="Extracts structured contact info (name, company, phone, email, website) from business card photos.",
                 provider="gemini",
-                model="gemini-3.8-flash",
+                model="gemini-2.0-flash",
                 system_prompt=(
                     "You are a business card extraction system. "
                     "Extract the person's name, company, designation, phone, email and website from the supplied image. "
@@ -70,12 +71,12 @@ def seed_database():
             db.add(img_field)
             print("[Seed] Created Connector A: Business Card Scanner")
         else:
-            if card_scanner.model in ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-2.5-flash", "gemini-2.0-flash"]:
-                card_scanner.model = "gemini-3.8-flash"
+            if card_scanner.model in ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-1.5-flash-8b", "gemini-2.5-flash"]:
+                card_scanner.model = "gemini-2.0-flash"
                 db.add(card_scanner)
-                print("[Seed] Upgraded card-scanner model to gemini-3.8-flash")
+                print("[Seed] Upgraded card-scanner model to gemini-2.0-flash")
 
-        # 3. Seed Connector B: Content Rewriter
+        # 3. Seed Connector B: Content Rewriter (Groq Llama 3.1 8B Instant - 100% Free Tier Guaranteed)
         rewriter = db.query(Connector).filter(Connector.slug == "content-rewriter").first()
         if not rewriter:
             rewriter = Connector(
@@ -83,7 +84,7 @@ def seed_database():
                 name="Content Rewriter",
                 description="Rewrites articles, marketing copy, or technical notes into targeted tones and word counts.",
                 provider="groq",
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 system_prompt=(
                     "You are a content rewriting assistant. "
                     "Rewrite the supplied text in the requested tone, keeping the original meaning intact. "
@@ -130,11 +131,75 @@ def seed_database():
                 order=2,
             ))
             print("[Seed] Created Connector B: Content Rewriter")
+        else:
+            if rewriter.model in ["llama-3.3-70b-versatile", "llama3-70b-8192"]:
+                rewriter.model = "llama-3.1-8b-instant"
+                db.add(rewriter)
+                print("[Seed] Upgraded content-rewriter model to llama-3.1-8b-instant")
 
-        # 4. Seed initial sample logs for immediate dashboard metrics
+        # 4. Seed Connector C: Sentiment Analyzer (Groq Llama 3.1 8B Instant - Free Tier)
+        sentiment = db.query(Connector).filter(Connector.slug == "sentiment-analyzer").first()
+        if not sentiment:
+            sentiment = Connector(
+                slug="sentiment-analyzer",
+                name="Sentiment Analyzer",
+                description="Analyzes customer feedback, reviews, and messages for sentiment polarity, confidence score, emotional tone, and key drivers.",
+                provider="groq",
+                model="llama-3.1-8b-instant",
+                system_prompt=(
+                    "You are an expert customer feedback and sentiment analyzer. "
+                    "Analyze the provided text carefully and return a JSON object with: "
+                    "\"sentiment\" (strictly 'positive', 'negative', or 'neutral'), "
+                    "\"score\" (number from -1.0 to 1.0), "
+                    "\"emotional_tone\" (e.g. 'enthusiastic', 'frustrated', 'satisfied', 'objective'), "
+                    "\"key_drivers\" (array of 1 to 4 bullet strings explaining the primary factors), "
+                    "\"summary\" (one concise sentence summarizing overall sentiment). "
+                    "Return ONLY valid JSON matching the configured output structure."
+                ),
+                output_schema={
+                    "sentiment": "string",
+                    "score": "number",
+                    "emotional_tone": "string",
+                    "key_drivers": "array",
+                    "summary": "string",
+                },
+                status="active",
+                api_key_hash=hash_api_key(DEMO_SENTIMENT_KEY),
+            )
+            db.add(sentiment)
+            db.flush()
+
+            # Input fields: text (required), domain (optional)
+            db.add(InputField(
+                connector_id=sentiment.id,
+                name="text",
+                field_type="text",
+                required=True,
+                description="Source text, customer review, or message to analyze.",
+                validation_rules={"min_length": 3, "max_length": 15000},
+                order=0,
+            ))
+            db.add(InputField(
+                connector_id=sentiment.id,
+                name="domain",
+                field_type="text",
+                required=False,
+                default_value="general",
+                description="Context domain (e.g., customer_support, product_review, social_media).",
+                validation_rules={"max_length": 50},
+                order=1,
+            ))
+            print("[Seed] Created Connector C: Sentiment Analyzer")
+        else:
+            if sentiment.model in ["llama-3.3-70b-versatile", "llama3-70b-8192"]:
+                sentiment.model = "llama-3.1-8b-instant"
+                db.add(sentiment)
+                print("[Seed] Upgraded sentiment-analyzer model to llama-3.1-8b-instant")
+
+        # 5. Seed initial sample logs for immediate dashboard metrics
         db.flush()
         sample_logs_count = db.query(RequestLog).count()
-        if sample_logs_count == 0 and card_scanner and rewriter:
+        if sample_logs_count == 0 and card_scanner and rewriter and sentiment:
             now = datetime.datetime.utcnow()
             db.add(RequestLog(
                 connector_id=card_scanner.id,
@@ -146,7 +211,7 @@ def seed_database():
                 total_tokens=944,
                 estimated_cost=0.000092,
                 provider="gemini",
-                model="gemini-1.5-flash",
+                model="gemini-2.0-flash",
                 request_preview='{"image": "[Image: alex_morgan_card.jpg (240182 bytes)]"}',
                 response_preview='{"name": "Alex Morgan", "company": "Apex Dynamics", "designation": "VP Engineering", "phone": "+1-555-0192", "email": "alex@apexdynamics.io", "website": "https://apexdynamics.io"}',
             ))
@@ -158,11 +223,25 @@ def seed_database():
                 input_tokens=180,
                 output_tokens=125,
                 total_tokens=305,
-                estimated_cost=0.000205,
+                estimated_cost=0.000019,
                 provider="groq",
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 request_preview='{"text": "We are releasing our new vector database today.", "tone": "exciting", "word_count": 50}',
                 response_preview='{"rewritten_text": "Thrilled to unveil our lightning-fast vector database today! Engineered for next-gen AI applications with ultra-low latency.", "word_count": 18}',
+            ))
+            db.add(RequestLog(
+                connector_id=sentiment.id,
+                status="success",
+                request_timestamp=now - datetime.timedelta(minutes=25),
+                response_time_ms=182.4,
+                input_tokens=140,
+                output_tokens=85,
+                total_tokens=225,
+                estimated_cost=0.000014,
+                provider="groq",
+                model="llama-3.1-8b-instant",
+                request_preview='{"text": "The customer support team resolved my issue in under 5 minutes. The platform is incredibly fast and dependable!", "domain": "customer_support"}',
+                response_preview='{"sentiment": "positive", "score": 0.94, "emotional_tone": "delighted", "key_drivers": ["5-minute resolution", "dependable platform"], "summary": "Customer expressed high satisfaction with responsiveness and platform reliability."}',
             ))
             print("[Seed] Created initial demonstration request logs")
 
@@ -171,6 +250,7 @@ def seed_database():
         print(f"Admin Credentials: {settings.ADMIN_EMAIL} / {settings.ADMIN_PASSWORD}")
         print(f"Card Scanner Demo Key: {DEMO_CARD_SCANNER_KEY}")
         print(f"Content Rewriter Demo Key: {DEMO_REWRITER_KEY}")
+        print(f"Sentiment Analyzer Demo Key: {DEMO_SENTIMENT_KEY}")
     except Exception as e:
         db.rollback()
         print(f"[Seed Error] {str(e)}")
