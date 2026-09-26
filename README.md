@@ -1,10 +1,14 @@
 # Universal AI API Connector & Hub
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://universal-api-owb68btc4-squeak2.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/ParthG24/Universal_api_hub)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16+-black.svg?style=flat&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
 [![Python](https://img.shields.io/badge/Python-3.11+-yellow.svg?style=flat&logo=python)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> 🚀 **Live Production Deployment:** [https://universal-api-owb68btc4-squeak2.vercel.app/](https://universal-api-owb68btc4-squeak2.vercel.app/)
 
 A production-style developer platform where administrators can define, deploy, test, document, and monitor reusable AI-powered API endpoints ("connectors") without writing custom code for each one. Built with a unified **Provider Adapter Architecture** supporting **Google Gemini** (multimodal vision + text), **Groq** (high-speed Llama models), and **OpenAI**, featuring an interactive dynamic test console, automatic JSON schema repair, and persistent token/cost observability styled in the **minimalist aesthetic**.
 
@@ -16,7 +20,7 @@ A production-style developer platform where administrators can define, deploy, t
 |---|---|---|
 | **Frontend** | **Next.js 14+ (App Router, TypeScript)** | Styled with Tailwind CSS in SurgeDB neo-brutalist aesthetic (`#DE6E4B` accents, hard offset shadows, monospace code consoles). |
 | **Backend** | **FastAPI (Python 3.11+)** | Pydantic v2 strict schemas, async `httpx` provider adapters, global standardized error envelopes. |
-| **Database & ORM** | **PostgreSQL / SQLite via SQLAlchemy 2.0** | Compatible with hosted Neon/Supabase PostgreSQL; Alembic database migrations. |
+| **Database & ORM** | **PostgreSQL / SQLite via SQLAlchemy 2.0** | Hosted Neon PostgreSQL with connection pooling; Alembic database migrations. |
 | **AI Providers** | **Gemini, Groq, OpenAI, Ollama** | Pluggable `AIProvider` adapter abstraction with model pricing, token calculation, and local offline inference via Ollama. |
 | **Security** | **JWT + Hashed API Keys** | Bcrypt admin authentication, SHA-256 hashed connector keys, strict input validation, secret isolation. |
 
@@ -26,9 +30,10 @@ A production-style developer platform where administrators can define, deploy, t
 
 | Service | Target URL | Notes |
 |---|---|---|
-| **Web Dashboard** | `https://universal-ai-hub.vercel.app` *(Placeholder / Configured for Vercel)* | Public evaluation shell & documentation. |
-| **FastAPI Backend** | `https://universal-hub-api.onrender.com` *(Placeholder / Configured for Render/Fly.io)* | Live REST API and dynamic endpoints. |
-| **Public API Docs** | `/connectors/card-scanner/docs` | Auto-generated interactive API reference. |
+| **Web Dashboard (Live)** | [https://universal-api-owb68btc4-squeak2.vercel.app/](https://universal-api-owb68btc4-squeak2.vercel.app/) | Live production UI hosted on Vercel Edge CDN. |
+| **FastAPI Backend (Live)** | `https://universal-hub-api.onrender.com` | Live REST API hosted on Render with Neon PostgreSQL. |
+| **Public API Reference** | [/connectors/card-scanner/docs](https://universal-api-owb68btc4-squeak2.vercel.app/connectors/card-scanner/docs) | Auto-generated interactive API reference with cURL, Python & JS snippets. |
+| **User & Architecture Guide** | [/guide](https://universal-api-owb68btc4-squeak2.vercel.app/guide) | Step-by-step evaluator walkthrough and mechanics. |
 
 > **Evaluation Credentials:**
 > - **Admin Email:** `admin@universalhub.dev`
