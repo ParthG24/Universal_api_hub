@@ -37,7 +37,7 @@ export default function NewConnectorPage() {
   const [description, setDescription] = useState("");
 
   const [provider, setProvider] = useState("gemini");
-  const [model, setModel] = useState("gemini-1.5-flash");
+  const [model, setModel] = useState("gemini-3.8-flash");
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
   const [isRefreshingModels, setIsRefreshingModels] = useState(false);
 

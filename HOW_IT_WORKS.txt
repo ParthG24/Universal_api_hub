@@ -138,7 +138,7 @@ Here is the exact journey of that request through the system:
        "tokens": 420,
        "estimated_cost": 0.000045,
        "provider": "gemini",
-       "model": "gemini-1.5-flash"
+       "model": "gemini-3.8-flash"
      }
    }
 
@@ -255,7 +255,7 @@ Every single invocation writes a persistent record to the `request_logs` table:
   - Groq & OpenAI: `response.json()["usage"]["prompt_tokens"]`
 - `estimated_cost`: computed by `calculate_cost(model, input_tokens, output_tokens)`.
   The pricing catalog stores price-per-million input and output tokens based on
-  public pricing (e.g. Gemini 1.5 Flash is $0.075/1M input, $0.30/1M output).
+  public pricing (e.g. Gemini 3.8 Flash is $0.075/1M input, $0.30/1M output).
 
 Limitations & Caveats:
 - When a request fails before reaching the AI provider (such as an auth failure

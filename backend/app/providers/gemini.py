@@ -11,7 +11,7 @@ class GeminiProvider(AIProvider):
     name = "gemini"
 
     def __init__(self, api_key: str):
-        self.api_key = api_key.strip()
+        self.api_key = api_key.strip().strip('"').strip("'")
         self.base_url = "https://generativelanguage.googleapis.com/v1beta"
         self._cached_active_models: List[str] = []
 
@@ -20,10 +20,16 @@ class GeminiProvider(AIProvider):
             return []
         if self._cached_active_models:
             return self._cached_active_models
-        endpoint = f"{self.base_url}/models?key={self.api_key}"
+        endpoint = f"{self.base_url}/models"
+        headers = {
+            "x-goog-api-key": self.api_key,
+            "Content-Type": "application/json",
+        }
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.get(endpoint)
+                res = await client.get(endpoint, headers=headers)
+                if res.status_code != 200:
+                    res = await client.get(f"{endpoint}?key={self.api_key}")
                 if res.status_code == 200:
                     data = res.json()
                     active = []
@@ -131,14 +137,24 @@ class GeminiProvider(AIProvider):
                 "parts": [{"text": system_prompt}]
             }
 
+        headers = {
+            "x-goog-api-key": self.api_key,
+            "Content-Type": "application/json",
+        }
+
         start_time = time.perf_counter()
         last_error = ""
 
         for m_name in candidate_models:
-            endpoint = f"{self.base_url}/models/{m_name}:generateContent?key={self.api_key}"
+            endpoint = f"{self.base_url}/models/{m_name}:generateContent"
             async with httpx.AsyncClient(timeout=45.0) as client:
                 try:
-                    response = await client.post(endpoint, json=payload)
+                    # Primary authentication via x-goog-api-key header
+                    response = await client.post(endpoint, headers=headers, json=payload)
+                    # If 401 unsupported token format, fallback to query param key
+                    if response.status_code == 401 and "ACCESS_TOKEN_TYPE_UNSUPPORTED" in response.text:
+                        query_endpoint = f"{endpoint}?key={self.api_key}"
+                        response = await client.post(query_endpoint, json=payload)
                 except httpx.TimeoutException:
                     last_error = f"Gemini request to '{m_name}' timed out after 45 seconds."
                     continue
@@ -155,6 +171,12 @@ class GeminiProvider(AIProvider):
                 if response.status_code in [404, 429, 503]:
                     await asyncio.sleep(0.2)
                     continue
+                elif response.status_code == 401:
+                    raise RuntimeError(
+                        f"Gemini API returned 401 (Unauthenticated). "
+                        f"Please ensure your GEMINI_API_KEY environment variable on Render is a valid Google AI Studio key. "
+                        f"Details: {response.text}"
+                    )
                 else:
                     raise RuntimeError(last_error)
         else:
@@ -193,10 +215,16 @@ class GeminiProvider(AIProvider):
         if not self.api_key:
             return self._fallback_models()
 
-        endpoint = f"{self.base_url}/models?key={self.api_key}"
+        endpoint = f"{self.base_url}/models"
+        headers = {
+            "x-goog-api-key": self.api_key,
+            "Content-Type": "application/json",
+        }
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
-                response = await client.get(endpoint)
+                response = await client.get(endpoint, headers=headers)
+                if response.status_code != 200:
+                    response = await client.get(f"{endpoint}?key={self.api_key}")
                 if response.status_code == 200:
                     data = response.json()
                     models = []

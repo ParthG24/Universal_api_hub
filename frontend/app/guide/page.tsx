@@ -600,7 +600,7 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
   "error": null,
   "meta": {
     "connector_slug": "card-scanner",
-    "model_used": "gemini-1.5-flash",
+    "model_used": "gemini-3.8-flash",
     "latency_ms": 782.4,
     "tokens": {
       "input": 128,
