@@ -647,35 +647,36 @@ ollama pull llava:latest          # Offline multimodal image recognition`;
                 <div className="font-bold text-black uppercase mb-2">3. Shape Normalization</div>
                 <p className="text-neutral-600 text-[11px] leading-relaxed">
                   Ensures all expected keys from your declared schema exist in the final returned payload with appropriate defaults if omitted.
+                </p>
+              </div>
             </div>
           </section>
 
           {/* CTA Box */}
-            <div className="mt-12 p-8 border-2 border-black bg-neutral-100 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div>
-                <h3 className="font-mono font-bold text-xl text-black">
-                  Ready to test drive Universal AI Hub?
-                </h3>
-                <p className="text-xs text-neutral-600 font-sans mt-1">
-                  Launch the interactive test console or create your own custom AI microservice in 60 seconds.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Link
-                  href="/login"
-                  className="btn-surge btn-surge-black px-6 py-3 font-mono text-xs"
-                >
-                  Sign In to Console →
-                </Link>
-                <Link
-                  href="/connectors/card-scanner/test"
-                  className="btn-surge btn-surge-white px-6 py-3 font-mono text-xs"
-                >
-                  Try Card Scanner
-                </Link>
-              </div>
+          <div className="mt-12 p-8 border-2 border-black bg-neutral-100 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="font-mono font-bold text-xl text-black">
+                Ready to test drive Universal AI Hub?
+              </h3>
+              <p className="text-xs text-neutral-600 font-sans mt-1">
+                Launch the interactive test console or create your own custom AI microservice in 60 seconds.
+              </p>
             </div>
-          </section>
+            <div className="flex gap-3">
+              <Link
+                href="/login"
+                className="btn-surge btn-surge-black px-6 py-3 font-mono text-xs"
+              >
+                Sign In to Console →
+              </Link>
+              <Link
+                href="/connectors/card-scanner/test"
+                className="btn-surge btn-surge-white px-6 py-3 font-mono text-xs"
+              >
+                Try Card Scanner
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

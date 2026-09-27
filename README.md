@@ -1,6 +1,6 @@
 # Universal AI API Connector & Hub
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://universal-api-owb68btc4-squeak2.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://universal-api-hub-eight.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/ParthG24/Universal_api_hub)
 [![Release](https://img.shields.io/badge/Release-v1.0.0-blue.svg?style=flat&logo=github)](https://github.com/ParthG24/Universal_api_hub/releases/tag/v1.0.0)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
@@ -9,7 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-yellow.svg?style=flat&logo=python)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 🚀 **Live Production Deployment:**
+> 🚀 **Live Production Deployment:** [https://universal-api-hub-eight.vercel.app/](https://universal-api-hub-eight.vercel.app/)
 
 A production-style developer platform where administrators can define, deploy, test, document, and monitor reusable AI-powered API endpoints ("connectors") without writing custom code for each one. Built with a unified **Provider Adapter Architecture** supporting **Google Gemini** (multimodal vision + text), **Groq** (high-speed Llama models), and **OpenAI**, featuring an interactive dynamic test console, automatic JSON schema repair, and persistent token/cost observability styled in the **minimalist aesthetic**.
 
@@ -31,10 +31,10 @@ A production-style developer platform where administrators can define, deploy, t
 
 | Service | Target URL | Notes |
 |---|---|---|
-| **Web Dashboard (Live)** | [https://universal-api-owb68btc4-squeak2.vercel.app/](https://universal-api-owb68btc4-squeak2.vercel.app/) | Live production UI hosted on Vercel Edge CDN. |
+| **Web Dashboard (Live)** | [https://universal-api-hub-eight.vercel.app/](https://universal-api-hub-eight.vercel.app/) | Live production UI hosted on Vercel Edge CDN. |
 | **FastAPI Backend (Live)** | `https://universal-hub-api.onrender.com` | Live REST API hosted on Render with Neon PostgreSQL. |
-| **Public API Reference** | [/connectors/card-scanner/docs](https://universal-api-owb68btc4-squeak2.vercel.app/connectors/card-scanner/docs) | Auto-generated interactive API reference with cURL, Python & JS snippets. |
-| **User & Architecture Guide** | [/guide](https://universal-api-owb68btc4-squeak2.vercel.app/guide) | Step-by-step evaluator walkthrough and mechanics. |
+| **Public API Reference** | [/connectors/card-scanner/docs](https://universal-api-hub-eight.vercel.app/connectors/card-scanner/docs) | Auto-generated interactive API reference with cURL, Python & JS snippets. |
+| **User & Architecture Guide** | [/guide](https://universal-api-hub-eight.vercel.app/guide) | Step-by-step evaluator walkthrough and mechanics. |
 
 > **Evaluation Credentials:**
 > - **Admin Email:** `admin@universalhub.dev`
