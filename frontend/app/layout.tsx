@@ -18,7 +18,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Universal AI API Hub — Surge-Style API Engine",
+  title: "Universal AI API Hub — Production AI API Engine",
   description:
     "Turn prompts into production-ready, typed AI APIs with dynamic input validation, schema auto-repair, and real-time observability.",
 };

@@ -19,7 +19,7 @@ A production-style developer platform where administrators can define, deploy, t
 
 | Layer | Technology | Key Details |
 |---|---|---|
-| **Frontend** | **Next.js 14+ (App Router, TypeScript)** | Styled with Tailwind CSS in SurgeDB neo-brutalist aesthetic (`#DE6E4B` accents, hard offset shadows, monospace code consoles). |
+| **Frontend** | **Next.js 14+ (App Router, TypeScript)** | Styled with Tailwind CSS in neo-brutalist aesthetic (`#DE6E4B` accents, hard offset shadows, monospace code consoles). |
 | **Backend** | **FastAPI (Python 3.11+)** | Pydantic v2 strict schemas, async `httpx` provider adapters, global standardized error envelopes. |
 | **Database & ORM** | **PostgreSQL / SQLite via SQLAlchemy 2.0** | Hosted Neon PostgreSQL with connection pooling; Alembic database migrations. |
 | **AI Providers** | **Gemini, Groq, OpenAI, Ollama** | Pluggable `AIProvider` adapter abstraction with model pricing, token calculation, and local offline inference via Ollama. |
@@ -253,7 +253,7 @@ print(response.json())
 - **Interactive Multi-Language Documentation:** Auto-generated interactive snippets in cURL, Python (`requests`), and JavaScript (`fetch`) that adapt to multipart or JSON content types.
 - **Fail-Safe Observability:** Try/except isolated database writes ensure telemetry issues never break client API responses.
 - **One-Click Sample Card Generation:** Test Console includes an in-browser canvas generator to create and test synthetic business card images on demand.
-- **SurgeDB Neo-Brutalist Theme:** Handcrafted UI matching `https://surgedb.chipling.xyz/` with high-contrast borders, terracotta accents (`#DE6E4B`), and offset drop shadows.
+- **Neo-Brutalist Engineering Theme:** Handcrafted high-contrast developer UI with solid borders, terracotta accents (`#DE6E4B`), and crisp offset drop shadows.
 
 ---
 

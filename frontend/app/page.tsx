@@ -84,9 +84,7 @@ console.log("Tokens Consumed:", meta.tokens);`;
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-6">
             <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-mono font-bold tracking-tight leading-[1] uppercase text-black">
-              THE UNIVERSAL,
-              <br />
-              HIGH-SPEED
+              THE UNIVERSAL
               <br />
               AI API HUB.
             </h1>
@@ -195,7 +193,7 @@ console.log("Tokens Consumed:", meta.tokens);`;
                 ZERO LEAK TELEMETRY
               </h3>
               <p className="font-sans text-xs text-neutral-600 leading-relaxed">
-                Clean, typed FastAPI backend and Next.js frontend with isolated SQLAlchemy telemetry
+                Clean, typed Python backend and Next.js frontend with isolated SQLAlchemy telemetry
                 and per-connector hashed keys.
               </p>
             </div>
@@ -271,7 +269,7 @@ console.log("Tokens Consumed:", meta.tokens);`;
                   Sub-Second LPU Execution
                 </h3>
                 <p className="font-sans text-neutral-600 text-sm leading-relaxed">
-                  Leverage Groq LPUs and Gemini Flash for lightning-fast inference, returning
+                  Leverage Groq LPUs and Gemini Flash for sub-second inference, returning
                   validated data in milliseconds for latency-critical applications.
                 </p>
               </div>
@@ -433,7 +431,7 @@ console.log("Tokens Consumed:", meta.tokens);`;
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
                   <span className="font-mono text-xs font-bold uppercase tracking-wider text-black">
-                    Connector B • High-Speed Text
+                    Connector B • Text Generation
                   </span>
                   <span className="font-mono text-[10px] text-[#e07850] font-bold uppercase">
                     Groq Llama 3.1 (Free)
