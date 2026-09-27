@@ -9,7 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-yellow.svg?style=flat&logo=python)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 🚀 **Live Production Deployment:** [https://universal-api-owb68btc4-squeak2.vercel.app/](https://universal-api-owb68btc4-squeak2.vercel.app/)
+> 🚀 **Live Production Deployment:**
 
 A production-style developer platform where administrators can define, deploy, test, document, and monitor reusable AI-powered API endpoints ("connectors") without writing custom code for each one. Built with a unified **Provider Adapter Architecture** supporting **Google Gemini** (multimodal vision + text), **Groq** (high-speed Llama models), and **OpenAI**, featuring an interactive dynamic test console, automatic JSON schema repair, and persistent token/cost observability styled in the **minimalist aesthetic**.
 
