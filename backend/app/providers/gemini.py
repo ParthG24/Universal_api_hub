@@ -11,7 +11,10 @@ class GeminiProvider(AIProvider):
     name = "gemini"
 
     def __init__(self, api_key: str):
-        self.api_key = api_key.strip().strip('"').strip("'")
+        raw = api_key.strip().strip('"').strip("'")
+        if raw.lower().startswith("bearer "):
+            raw = raw[7:].strip()
+        self.api_key = raw
         self.base_url = "https://generativelanguage.googleapis.com/v1beta"
         self._cached_active_models: List[str] = []
 
@@ -21,15 +24,26 @@ class GeminiProvider(AIProvider):
         if self._cached_active_models:
             return self._cached_active_models
         endpoint = f"{self.base_url}/models"
-        headers = {
-            "x-goog-api-key": self.api_key,
-            "Content-Type": "application/json",
-        }
+        clean_key = self.api_key
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.get(endpoint, headers=headers)
-                if res.status_code != 200:
-                    res = await client.get(f"{endpoint}?key={self.api_key}")
+                # 1. Header x-goog-api-key
+                res = await client.get(
+                    endpoint,
+                    headers={"x-goog-api-key": clean_key, "Content-Type": "application/json"}
+                )
+                # 2. Query param ?key=
+                if res.status_code == 401:
+                    res = await client.get(
+                        f"{endpoint}?key={clean_key}",
+                        headers={"Content-Type": "application/json"}
+                    )
+                # 3. Authorization Bearer (for OAuth2 / ya29 tokens)
+                if res.status_code == 401:
+                    res = await client.get(
+                        endpoint,
+                        headers={"Authorization": f"Bearer {clean_key}", "Content-Type": "application/json"}
+                    )
                 if res.status_code == 200:
                     data = res.json()
                     active = []
@@ -79,12 +93,13 @@ class GeminiProvider(AIProvider):
         elif clean_model not in RETIRED_MODELS:
             candidate_models.append(clean_model)
 
-        # 2026 Flagship and Low-Demand models
+        # 2026 Flagship, Low-Demand, and Standard fallback models
         preferred_models = [
             "gemini-3.8-flash",
             "gemini-3.5-flash-lite",
-            "gemini-3.5-flash",
-            "gemini-3.7-flash",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
         ]
 
         if active_models:
@@ -137,10 +152,9 @@ class GeminiProvider(AIProvider):
                 "parts": [{"text": system_prompt}]
             }
 
-        headers = {
-            "x-goog-api-key": self.api_key,
-            "Content-Type": "application/json",
-        }
+        clean_key = self.api_key.strip().strip('"').strip("'")
+        if clean_key.lower().startswith("bearer "):
+            clean_key = clean_key[7:].strip()
 
         start_time = time.perf_counter()
         last_error = ""
@@ -149,12 +163,26 @@ class GeminiProvider(AIProvider):
             endpoint = f"{self.base_url}/models/{m_name}:generateContent"
             async with httpx.AsyncClient(timeout=45.0) as client:
                 try:
-                    # Primary authentication via x-goog-api-key header
-                    response = await client.post(endpoint, headers=headers, json=payload)
-                    # If 401 unsupported token format, fallback to query param key
-                    if response.status_code == 401 and "ACCESS_TOKEN_TYPE_UNSUPPORTED" in response.text:
-                        query_endpoint = f"{endpoint}?key={self.api_key}"
-                        response = await client.post(query_endpoint, json=payload)
+                    # Strategy 1: x-goog-api-key header
+                    response = await client.post(
+                        endpoint,
+                        headers={"x-goog-api-key": clean_key, "Content-Type": "application/json"},
+                        json=payload,
+                    )
+                    # Strategy 2: URL query parameter ?key=
+                    if response.status_code == 401:
+                        response = await client.post(
+                            f"{endpoint}?key={clean_key}",
+                            headers={"Content-Type": "application/json"},
+                            json=payload,
+                        )
+                    # Strategy 3: OAuth2 Bearer token (for GCP tokens or ya29. credentials)
+                    if response.status_code == 401:
+                        response = await client.post(
+                            endpoint,
+                            headers={"Authorization": f"Bearer {clean_key}", "Content-Type": "application/json"},
+                            json=payload,
+                        )
                 except httpx.TimeoutException:
                     last_error = f"Gemini request to '{m_name}' timed out after 45 seconds."
                     continue
@@ -173,8 +201,8 @@ class GeminiProvider(AIProvider):
                     continue
                 elif response.status_code == 401:
                     raise RuntimeError(
-                        f"Gemini API returned 401 (Unauthenticated). "
-                        f"Please ensure your GEMINI_API_KEY environment variable on Render is a valid Google AI Studio key. "
+                        f"Gemini API returned 401 (Unauthenticated) across all authentication methods. "
+                        f"Please verify that GEMINI_API_KEY on Render is an active Google AI Studio key from https://aistudio.google.com/apikey (starts with AIzaSy... or AQ.). "
                         f"Details: {response.text}"
                     )
                 else:
