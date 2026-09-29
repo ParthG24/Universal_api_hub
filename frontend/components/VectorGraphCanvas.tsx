@@ -15,10 +15,10 @@ export default function VectorGraphCanvas() {
 
     // AI Hub Network Nodes: Gateway, Gemini Vision, Groq LPU, Schema Repair, Cost Telemetry
     const nodes = [
-      { x: 300, y: 110, r: 28, label: "Gemini Vision [Multimodal]", vx: 0.15, vy: 0.2 },
+      { x: 300, y: 110, r: 28, label: "API Gateway [/invoke]", vx: 0.15, vy: 0.2 },
       { x: 390, y: 220, r: 20, label: "Groq LPU [210ms]", vx: -0.2, vy: 0.15 },
-      { x: 410, y: 350, r: 24, label: "Schema Repair [JSON OK]", vx: 0.1, vy: -0.15 },
-      { x: 300, y: 440, r: 32, label: "API Gateway [/invoke]", vx: -0.15, vy: -0.2 },
+      { x: 410, y: 350, r: 24, label: "Gemini Vision [Multimodal]", vx: 0.1, vy: -0.15 },
+      { x: 300, y: 440, r: 32, label: "Schema Repair [JSON OK]", vx: -0.15, vy: -0.2 },
       { x: 230, y: 330, r: 18, label: "Telemetry [Tokens/Cost]", vx: 0.2, vy: -0.1 },
     ];
 
