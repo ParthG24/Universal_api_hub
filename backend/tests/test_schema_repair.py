@@ -46,3 +46,13 @@ def test_validate_and_normalize_fills_missing_keys():
 def test_empty_response_raises_mismatch():
     with pytest.raises(SchemaMismatchError):
         SchemaRepairService.clean_and_parse_json("   ")
+
+
+def test_clean_and_parse_json_with_single_quotes_ast():
+    # LLMs frequently output single quotes and Python True/False
+    raw = "{'name': 'Bob Smith', 'active': True, 'score': 98.5}"
+    parsed = SchemaRepairService.clean_and_parse_json(raw)
+    assert parsed["name"] == "Bob Smith"
+    assert parsed["active"] is True
+    assert parsed["score"] == 98.5
+

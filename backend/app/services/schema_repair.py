@@ -1,3 +1,4 @@
+import ast
 import json
 import re
 from typing import Any, Dict, Optional, Tuple
@@ -12,6 +13,7 @@ class SchemaMismatchError(Exception):
 class SchemaRepairService:
     """
     Cleans, extracts, and repairs raw LLM text into verified JSON matching the expected schema.
+    Uses regex sanitization, JSON parsing, and AST (Abstract Syntax Tree) literal evaluation.
     """
 
     @classmethod
@@ -47,6 +49,13 @@ class SchemaRepairService:
                     return json.loads(repaired)
                 except Exception:
                     pass
+                # AST Fallback: safely parse Python literal syntax (e.g. single quotes, True/False/None)
+                try:
+                    parsed_ast = ast.literal_eval(repaired)
+                    if isinstance(parsed_ast, (dict, list)):
+                        return parsed_ast
+                except Exception:
+                    pass
 
         first_bracket = text.find("[")
         last_bracket = text.rfind("]")
@@ -58,6 +67,12 @@ class SchemaRepairService:
                 repaired = re.sub(r",\s*([\]}])", r"\1", candidate)
                 try:
                     return json.loads(repaired)
+                except Exception:
+                    pass
+                try:
+                    parsed_ast = ast.literal_eval(repaired)
+                    if isinstance(parsed_ast, (dict, list)):
+                        return parsed_ast
                 except Exception:
                     pass
 
