@@ -365,12 +365,7 @@ console.log("Tokens Consumed:", meta.tokens);`;
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              <Link
-                href="/signup"
-                className="btn-surge-orange text-xs py-2.5 px-4 font-mono font-bold"
-              >
-                Sign Up Free
-              </Link>
+              
               <Link
                 href="/connectors/new"
                 className="btn-surge-black text-xs py-2.5 px-4 font-mono font-bold"
